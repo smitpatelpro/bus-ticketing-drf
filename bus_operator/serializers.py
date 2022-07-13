@@ -42,13 +42,19 @@ class BusOperatorProfileSerializer(serializers.ModelSerializer):
                 )
             if "full_name" not in validated_data["user"]:
                 raise serializers.ValidationError(
-                    {"success": False, "errors": {"full_name": ["This field is required."]}}
+                    {
+                        "success": False,
+                        "errors": {"full_name": ["This field is required."]},
+                    }
                 )
             if "password" not in validated_data:
                 raise serializers.ValidationError(
-                    {"success": False, "errors": {"password": ["This field is required."]}}
+                    {
+                        "success": False,
+                        "errors": {"password": ["This field is required."]},
+                    }
                 )
-            
+
             # Create User Objects
             try:
                 password = validated_data.pop("password")
@@ -69,9 +75,9 @@ class BusOperatorProfileSerializer(serializers.ModelSerializer):
                 {
                     "success": False,
                     "errors": {
-                        "full_name":["This field is required."],
-                        "email":["This field is required."],
-                        "phone_number":["This field is required."],
+                        "full_name": ["This field is required."],
+                        "email": ["This field is required."],
+                        "phone_number": ["This field is required."],
                     },
                 }
             )
