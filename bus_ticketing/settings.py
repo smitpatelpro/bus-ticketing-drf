@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
+import time
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,7 +40,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "authentication",
     "common",
+    "bus_admin",
+    "bus_operator",
 ]
 
 MIDDLEWARE = [
@@ -132,3 +137,8 @@ REST_FRAMEWORK = {
 }
 
 API_V1_URL_PREFIX = "api/v1/"  # It sets prefix for API V1
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=20),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
