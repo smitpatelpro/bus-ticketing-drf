@@ -8,7 +8,7 @@ class BaseModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    deleted_at = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
 
 class User(AbstractBaseUser):
@@ -44,7 +44,7 @@ class User(AbstractBaseUser):
         return self.full_name
 
     def __str__(self):
-        return self.email
+        return self.email + " - " + self.full_name
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
@@ -65,3 +65,7 @@ class User(AbstractBaseUser):
     def is_admin(self):
         "Is the user a admin member?"
         return self.admin
+
+
+class Media(BaseModel):
+    file = models.FileField()

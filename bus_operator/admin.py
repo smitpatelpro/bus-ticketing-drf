@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import BusOperatorProfile
 
-# Register your models here.
+
+@admin.register(BusOperatorProfile)
+class BusOperatorProfileAdmin(admin.ModelAdmin):
+    pass
