@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class AdminConfig(AppConfig):
+class BusAdminConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "admin"
+    name = "bus_admin"
