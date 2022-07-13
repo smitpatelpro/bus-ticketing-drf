@@ -10,9 +10,9 @@ class TestApiView(APIView):
 
     # 1. List all
     def get(self, request, *args, **kwargs):
-        '''
+        """
         List all objects
-        '''
+        """
         # todos = Todo.objects.filter(user = request.user.id)
         # serializer = TodoSerializer(todos, many=True)
-        return Response({"Hello":"World"}, status=status.HTTP_200_OK)
+        return Response({"Hello": "World"}, status=status.HTTP_200_OK)

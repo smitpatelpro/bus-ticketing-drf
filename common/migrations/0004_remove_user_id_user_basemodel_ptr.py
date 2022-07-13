@@ -7,8 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('common', '0003_rename_is_admin_user_admin_and_more'),
+        ("common", "0003_rename_is_admin_user_admin_and_more"),
     ]
 
-    operations = [
-    ]
+    operations = []

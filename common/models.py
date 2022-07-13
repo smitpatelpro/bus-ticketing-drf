@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 import uuid
-from .managers import UserManager 
+from .managers import UserManager
+
 # Create your models here.
 class BaseModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -9,15 +10,16 @@ class BaseModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True)
 
+
 class User(AbstractBaseUser):
     objects = UserManager()
-    ROLES= (
-        ("ADMIN","ADMIN"),
-        ("BUS_OPERATOR","BUS_OPERATOR"),
-        ("CUSTOMER","CUSTOMER"),
+    ROLES = (
+        ("ADMIN", "ADMIN"),
+        ("BUS_OPERATOR", "BUS_OPERATOR"),
+        ("CUSTOMER", "CUSTOMER"),
     )
     email = models.EmailField(
-        verbose_name='email address',
+        verbose_name="email address",
         max_length=255,
         unique=True,
     )
@@ -25,13 +27,13 @@ class User(AbstractBaseUser):
     phone_number = models.CharField(max_length=20)
     role = models.CharField(choices=ROLES, max_length=20)
     is_active = models.BooleanField(default=True)
-    staff = models.BooleanField(default=False) # a admin user; non super-user
-    admin = models.BooleanField(default=False) # a superuser
+    staff = models.BooleanField(default=False)  # a admin user; non super-user
+    admin = models.BooleanField(default=False)  # a superuser
 
     # notice the absence of a "Password field", that is built in.
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = [] # Email & Password are required by default.
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []  # Email & Password are required by default.
 
     def get_full_name(self):
         # The user is identified by their email address
