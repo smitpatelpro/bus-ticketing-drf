@@ -58,7 +58,9 @@ class BusOperatorProfileSerializer(serializers.ModelSerializer):
             # Create User Objects
             try:
                 password = validated_data.pop("password")
-                user = User.objects.create(**validated_data["user"])
+                user = User.objects.create(
+                    role="BUS_OPERATOR", **validated_data["user"]
+                )
                 user.set_password(password)
                 user.save()
                 del validated_data["user"]
