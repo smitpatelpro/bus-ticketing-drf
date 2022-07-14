@@ -2,13 +2,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
-from . import serializers, models
+from . import serializers, models, decorators
 from common.serializers import MediaSerializer
+from django.utils.decorators import method_decorator
 
-
+# Views for all objects
 class BusOperatorProfileListView(APIView):
     """
-    List View for BusOperatorProfile objects
+    List View for ALL BusOperatorProfile objects
     it is responsible to perform operation on collection of object
     """
 
@@ -39,14 +40,21 @@ class BusOperatorProfileListView(APIView):
 
 class BusOperatorProfileDetailView(APIView):
     """
-    Details View for BusOperatorProfile objects
+    Details View for Specific BusOperatorProfile objects
     it is responsible to perform operation on single object
     """
 
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, uuid, *args, **kwargs):
-        objs = models.BusOperatorProfile.objects.get(id=uuid)
+        try:
+            objs = models.BusOperatorProfile.objects.get(id=uuid)
+        except models.BusOperatorProfile.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Resource does not exists"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = serializers.BusOperatorProfileSerializer(objs, many=False)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
@@ -70,22 +78,22 @@ class BusOperatorProfileDetailView(APIView):
 
 class BusOperatorProfileMediaView(APIView):
     """
-    This Endpoint is used to set/update media in BusOperatorProfile
+    Media access for Specific BusOperatorProfile
     """
 
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, uuid, *args, **kwargs):
-        objs = models.BusOperatorProfile.objects.get(id=uuid)
-        serializer = serializers.BusOperatorProfileMediaSerializer(objs, many=False)
+        profile = models.BusOperatorProfile.objects.get(id=uuid)
+        serializer = serializers.BusOperatorProfileMediaSerializer(profile, many=False)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
     def patch(self, request, uuid, *args, **kwargs):
-        objs = models.BusOperatorProfile.objects.get(id=uuid)
+        profile = models.BusOperatorProfile.objects.get(id=uuid)
         serializer = serializers.BusOperatorProfileMediaSerializer(
-            objs, data=request.data, partial=False
+            profile, data=request.data, partial=False
         )
         if serializer.is_valid():
             serializer.save()
@@ -111,10 +119,57 @@ class BusOperatorProfileMediaView(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
-        serializer = serializers.BusOperatorProfileMediaSerializer(
-            operator, partial=False
-        )
         return Response(
-            {"success": True, "data": serializer.data},
+            {"success": True},
+            status=status.HTTP_200_OK,
+        )
+
+
+# Views for Current User
+class ProfileMediaView(APIView):
+    """
+    Media access for Current BusOperatorProfile
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    @method_decorator(decorators.bus_operator_profile_required)
+    def get(self, request, profile, *args, **kwargs):
+        serializer = serializers.BusOperatorProfileMediaSerializer(profile, many=False)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+    @method_decorator(decorators.bus_operator_profile_required)
+    def patch(self, request, profile, *args, **kwargs):
+        serializer = serializers.BusOperatorProfileMediaSerializer(
+            profile, data=request.data, partial=False
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @method_decorator(decorators.bus_operator_profile_required)
+    def delete(self, request, profile, *args, **kwargs):
+        if profile.business_logo:
+            profile.business_logo.delete()
+        else:
+            return Response(
+                {
+                    "success": False,
+                    "errors": {
+                        "business_logo": "Can't delete field that is already null"
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"success": True},
             status=status.HTTP_200_OK,
         )
