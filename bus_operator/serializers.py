@@ -4,6 +4,8 @@ from django.contrib.auth import password_validation
 from django.db import transaction
 from django.db import IntegrityError
 from django.contrib.auth import get_user_model
+from common.serializers import MediaSerializer
+from common.models import Media
 
 User = get_user_model()
 
@@ -100,3 +102,41 @@ class BusOperatorProfileSerializer(serializers.ModelSerializer):
     def validate_pasword(self, value):
         password_validation.validate_password(value, self.instance)
         return value
+
+
+class BusOperatorProfileMediaSerializer(serializers.ModelSerializer):
+    business_logo = MediaSerializer()
+
+    class Meta:
+        model = models.BusOperatorProfile
+        fields = [
+            "business_logo",
+        ]
+
+    def update(self, instance, validated_data):
+        if "business_logo" in validated_data:
+            # Validate Mandatory Fields
+            if "file" not in validated_data["business_logo"]:
+                raise serializers.ValidationError(
+                    {"success": False, "errors": {"file": ["This field is required."]}}
+                )
+            # if media objects present, then delete existing and create new one
+            if instance.business_logo:
+                instance.business_logo.delete()
+
+            media = Media.objects.create(
+                file=validated_data["business_logo"]["file"]
+            )
+            instance.business_logo = media
+            instance.save(update_fields=["business_logo"])
+
+        else:
+            raise serializers.ValidationError(
+                {
+                    "success": False,
+                    "errors": {
+                        "business_logo": ["This field is required."],
+                    },
+                }
+            )
+        return instance

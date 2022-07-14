@@ -2,15 +2,21 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 import uuid
 from .managers import UserManager
+from django.db.models import Manager, QuerySet
+from softdelete.models import SoftDeleteObject
 
-# Create your models here.
-class BaseModel(models.Model):
+# BASE Classes
+class BaseModel(SoftDeleteObject, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    deleted_at = models.DateTimeField(null=True, blank=True)
+    # deleted_at :- This field is added by SoftDeleteObject
+
+    class Meta:
+        abstract = True,
 
 
+# Models
 class User(AbstractBaseUser):
     objects = UserManager()
     ROLES = (
@@ -69,3 +75,6 @@ class User(AbstractBaseUser):
 
 class Media(BaseModel):
     file = models.FileField()
+
+    def __str__(self) -> str:
+        return "{} ({})".format(self.file, self.id)

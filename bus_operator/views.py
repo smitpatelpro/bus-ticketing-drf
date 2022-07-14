@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
 from . import serializers, models
+from common.serializers import MediaSerializer
 
 
 class BusOperatorProfileListView(APIView):
@@ -64,4 +65,56 @@ class BusOperatorProfileDetailView(APIView):
         return Response(
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class BusOperatorProfileMediaView(APIView):
+    """
+    This Endpoint is used to set/update media in BusOperatorProfile
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, uuid, *args, **kwargs):
+        objs = models.BusOperatorProfile.objects.get(id=uuid)
+        serializer = serializers.BusOperatorProfileMediaSerializer(objs, many=False)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+    def patch(self, request, uuid, *args, **kwargs):
+        objs = models.BusOperatorProfile.objects.get(id=uuid)
+        serializer = serializers.BusOperatorProfileMediaSerializer(
+            objs, data=request.data, partial=False
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, uuid, *args, **kwargs):
+        operator = models.BusOperatorProfile.objects.get(id=uuid)
+        if operator.business_logo:
+            operator.business_logo.delete()
+        else:
+            return Response(
+                {
+                    "success": False,
+                    "errors": {
+                        "business_logo": "Can't delete field that is already null"
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+        serializer = serializers.BusOperatorProfileMediaSerializer(
+            operator, partial=False
+        )
+        return Response(
+            {"success": True, "data": serializer.data},
+            status=status.HTTP_200_OK,
         )
