@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
-from . import serializers, models, decorators
+from . import models, decorators, serializers_profile
 from common.serializers import MediaSerializer
 from django.utils.decorators import method_decorator
 
@@ -17,13 +17,13 @@ class BusOperatorProfileListView(APIView):
 
     def get(self, request, *args, **kwargs):
         objs = models.BusOperatorProfile.objects.all()
-        serializer = serializers.BusOperatorProfileSerializer(objs, many=True)
+        serializer = serializers_profile.BusOperatorProfileSerializer(objs, many=True)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
     def post(self, request, *args, **kwargs):
-        serializer = serializers.BusOperatorProfileSerializer(
+        serializer = serializers_profile.BusOperatorProfileSerializer(
             data=request.data, partial=True
         )
         if serializer.is_valid():
@@ -55,14 +55,14 @@ class BusOperatorProfileDetailView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer = serializers.BusOperatorProfileSerializer(objs, many=False)
+        serializer = serializers_profile.BusOperatorProfileSerializer(objs, many=False)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
     def patch(self, request, uuid, *args, **kwargs):
         objs = models.BusOperatorProfile.objects.get(id=uuid)
-        serializer = serializers.BusOperatorProfileSerializer(
+        serializer = serializers_profile.BusOperatorProfileSerializer(
             objs, data=request.data, partial=False
         )
         if serializer.is_valid():
@@ -85,14 +85,16 @@ class BusOperatorProfileMediaView(APIView):
 
     def get(self, request, uuid, *args, **kwargs):
         profile = models.BusOperatorProfile.objects.get(id=uuid)
-        serializer = serializers.BusOperatorProfileMediaSerializer(profile, many=False)
+        serializer = serializers_profile.BusOperatorProfileMediaSerializer(
+            profile, many=False
+        )
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
     def patch(self, request, uuid, *args, **kwargs):
         profile = models.BusOperatorProfile.objects.get(id=uuid)
-        serializer = serializers.BusOperatorProfileMediaSerializer(
+        serializer = serializers_profile.BusOperatorProfileMediaSerializer(
             profile, data=request.data, partial=False
         )
         if serializer.is_valid():
@@ -135,14 +137,16 @@ class ProfileMediaView(APIView):
 
     @method_decorator(decorators.bus_operator_profile_required)
     def get(self, request, profile, *args, **kwargs):
-        serializer = serializers.BusOperatorProfileMediaSerializer(profile, many=False)
+        serializer = serializers_profile.BusOperatorProfileMediaSerializer(
+            profile, many=False
+        )
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
     @method_decorator(decorators.bus_operator_profile_required)
     def patch(self, request, profile, *args, **kwargs):
-        serializer = serializers.BusOperatorProfileMediaSerializer(
+        serializer = serializers_profile.BusOperatorProfileMediaSerializer(
             profile, data=request.data, partial=False
         )
         if serializer.is_valid():

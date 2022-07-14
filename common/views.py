@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
-from bus_operator import serializers as serializers_operator
+from bus_operator import serializers_profile as serializers_operator
 
 # Create your views here.
 

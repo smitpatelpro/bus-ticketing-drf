@@ -37,22 +37,26 @@ class Bus(BaseModel):
         ("SLEEPER", "SLEEPER"),
         ("SLEEPER_DUPLEX", "SLEEPER_DUPLEX"),
     )
-    operator = models.ForeignKey("BusOperatorProfile", related_name="buses", on_delete=models.CASCADE)
+    operator = models.ForeignKey(
+        "BusOperatorProfile", related_name="buses", on_delete=models.CASCADE
+    )
     name = models.CharField(max_length=255)
-    photos = models.ManyToManyField("common.Media")
     type = models.CharField(choices=BUS_TYPES, max_length=20)
     capacity = models.IntegerField(default=0)
     per_km_fare = models.DecimalField(max_digits=6, decimal_places=2)
-    amenities = models.ManyToManyField("BusAmenities")
+    photos = models.ManyToManyField("common.Media", blank=True)
+    amenities = models.ManyToManyField("BusAmenity", blank=True)
 
 
-class BusAmenities(BaseModel):
+class BusAmenity(BaseModel):
     name = models.CharField(max_length=255)
     description = models.TextField()
 
 
 class BusUnavailability(BaseModel):
-    bus = models.ForeignKey("Bus", on_delete=models.CASCADE, related_name="unavailabilities")
+    bus = models.ForeignKey(
+        "Bus", on_delete=models.CASCADE, related_name="unavailabilities"
+    )
     date = models.DateField()
     reason = models.TextField()
 
