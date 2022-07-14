@@ -17,7 +17,7 @@ class BaseModel(SoftDeleteObject, models.Model):
 
 
 # Models
-class User(AbstractBaseUser):
+class User(BaseModel, AbstractBaseUser):
     objects = UserManager()
     ROLES = (
         ("ADMIN", "ADMIN"),
@@ -50,7 +50,7 @@ class User(AbstractBaseUser):
         return self.full_name
 
     def __str__(self):
-        return self.email + " - " + self.full_name
+        return "{} ({})".format(self.email, self.id)
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
