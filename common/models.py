@@ -13,7 +13,7 @@ class BaseModel(SoftDeleteObject, models.Model):
     # deleted_at :- This field is added by SoftDeleteObject
 
     class Meta:
-        abstract = True,
+        abstract = (True,)
 
 
 # Models

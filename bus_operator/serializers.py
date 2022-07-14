@@ -124,9 +124,7 @@ class BusOperatorProfileMediaSerializer(serializers.ModelSerializer):
             if instance.business_logo:
                 instance.business_logo.delete()
 
-            media = Media.objects.create(
-                file=validated_data["business_logo"]["file"]
-            )
+            media = Media.objects.create(file=validated_data["business_logo"]["file"])
             instance.business_logo = media
             instance.save(update_fields=["business_logo"])
 
