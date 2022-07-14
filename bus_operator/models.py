@@ -29,3 +29,42 @@ class BusOperatorProfile(BaseModel):
 
     def __str__(self) -> str:
         return "{} ({})".format(self.business_name, self.id)
+
+
+class Bus(BaseModel):
+    BUS_TYPES = (
+        ("REGULAR", "REGULAR"),
+        ("SLEEPER", "SLEEPER"),
+        ("SLEEPER_DUPLEX", "SLEEPER_DUPLEX"),
+    )
+    operator = models.ForeignKey("BusOperatorProfile", related_name="buses", on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    photos = models.ManyToManyField("common.Media")
+    type = models.CharField(choices=BUS_TYPES, max_length=20)
+    capacity = models.IntegerField(default=0)
+    per_km_fare = models.DecimalField(max_digits=6, decimal_places=2)
+    amenities = models.ManyToManyField("BusAmenities")
+
+
+class BusAmenities(BaseModel):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+
+
+class BusUnavailability(BaseModel):
+    bus = models.ForeignKey("Bus", on_delete=models.CASCADE, related_name="unavailabilities")
+    date = models.DateField()
+    reason = models.TextField()
+
+
+class BusStoppage(BaseModel):
+    JOURNEY_TYPES = (
+        ("UP", "UP"),
+        ("DOWN", "DOWN"),
+    )
+    bus = models.ForeignKey("Bus", on_delete=models.CASCADE, related_name="stoppages")
+    name = models.CharField(max_length=255)
+    departure_time = models.DateField()
+    arrival_time = models.DateField()
+    distance = models.IntegerField(default=0)
+    journey_type = models.CharField(choices=JOURNEY_TYPES, max_length=20)
