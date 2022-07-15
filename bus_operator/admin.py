@@ -8,5 +8,10 @@ class BusOperatorProfileAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.Bus)
-class BusOperatorProfileAdmin(admin.ModelAdmin):
+class BusAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(models.BusAmenity)
+class BusAmenityAdmin(admin.ModelAdmin):
     pass

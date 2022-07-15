@@ -37,6 +37,7 @@ class BusOperatorOverviewSerializer(serializers.ModelSerializer):
             else ""
         )
 
+
 class BusAmenitySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.BusAmenity
@@ -46,8 +47,8 @@ class BusAmenitySerializer(serializers.ModelSerializer):
             "description",
         ]
 
+
 class BusSerializer(serializers.ModelSerializer):
-    # operator = BusOperatorOverviewSerializer()
     photos = MediaSerializer(many=True, read_only=True)
     amenities = BusAmenitySerializer(many=True, read_only=True)
 
@@ -55,7 +56,6 @@ class BusSerializer(serializers.ModelSerializer):
         model = models.Bus
         fields = [
             "id",
-            # "operator",
             "name",
             "type",
             "capacity",
@@ -64,21 +64,7 @@ class BusSerializer(serializers.ModelSerializer):
             "amenities",
         ]
 
-
     def create(self, validated_data):
-        print(validated_data)
         profile = self.context.get("profile")
         instance = models.Bus.objects.create(operator=profile, **validated_data)
         return instance
-
-    # def update(self, instance, validated_data):
-    #     if "user" in validated_data:
-    #         instance.user.full_name = validated_data["user"].get(
-    #             "full_name", instance.user.full_name
-    #         )
-    #         instance.user.phone_number = validated_data["user"].get(
-    #             "phone_number", instance.user.phone_number
-    #         )
-    #         del validated_data["user"]
-    #     return super().update(instance, validated_data)
-

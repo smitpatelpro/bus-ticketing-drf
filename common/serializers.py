@@ -12,6 +12,7 @@ class MediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Media
         fields = [
+            "id",
             "file",
             "created_at",
             "updated_at",
