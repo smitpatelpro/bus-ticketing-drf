@@ -1,3 +1,4 @@
+from multiprocessing import context
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -24,7 +25,7 @@ class BusOperatorProfileListView(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = serializers.BusOperatorProfileSerializer(
-            data=request.data, partial=True
+            data=request.data, partial=True, context={"request": request}
         )
         if serializer.is_valid():
             serializer.save()
@@ -63,7 +64,7 @@ class BusOperatorProfileDetailView(APIView):
     def patch(self, request, uuid, *args, **kwargs):
         objs = models.BusOperatorProfile.objects.get(id=uuid)
         serializer = serializers.BusOperatorProfileSerializer(
-            objs, data=request.data, partial=False
+            objs, data=request.data, partial=True, context={"request": request}
         )
         if serializer.is_valid():
             serializer.save()
@@ -143,7 +144,7 @@ class ProfileMediaView(APIView):
     @method_decorator(decorators.bus_operator_profile_required)
     def patch(self, request, profile, *args, **kwargs):
         serializer = serializers.BusOperatorProfileMediaSerializer(
-            profile, data=request.data, partial=False
+            profile, data=request.data, partial=False, context={"request":request}
         )
         if serializer.is_valid():
             serializer.save()
