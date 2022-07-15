@@ -25,7 +25,7 @@ class BusOperatorProfileListView(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = serializers.BusOperatorProfileSerializer(
-            data=request.data, partial=True, context={"request": request}
+            data=request.data, context={"request": request}
         )
         if serializer.is_valid():
             serializer.save()
