@@ -6,15 +6,16 @@ from rest_framework import permissions
 from . import serializers, models, decorators
 from common.serializers import MediaSerializer
 from django.utils.decorators import method_decorator
+from authentication.permission_classes import *
 
-# Views for all objects
+
 class BusOperatorProfileListView(APIView):
     """
     List View for ALL BusOperatorProfile objects
     it is responsible to perform operation on collection of object
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [AdminGetOnlyOperatorPostPatchOnly]
 
     def get(self, request, *args, **kwargs):
         objs = models.BusOperatorProfile.objects.all()
@@ -42,10 +43,10 @@ class BusOperatorProfileListView(APIView):
 class BusOperatorProfileDetailView(APIView):
     """
     Details View for Specific BusOperatorProfile objects
-    it is responsible to perform operation on single object
+    Only for admin
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [AdminOnly]
 
     def get(self, request, uuid, *args, **kwargs):
         try:
@@ -76,25 +77,24 @@ class BusOperatorProfileDetailView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-
-class BusOperatorProfileMediaView(APIView):
+# Bus Operator Profile Views
+class ProfileDetailView(APIView):
     """
-    Media access for Specific BusOperatorProfile
+    Details View for Specific BusOperatorProfile objects
+    it is responsible to perform operation on single object
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [BusOperatorOnly]
 
-    def get(self, request, uuid, *args, **kwargs):
-        profile = models.BusOperatorProfile.objects.get(id=uuid)
-        serializer = serializers.BusOperatorProfileMediaSerializer(profile, many=False)
+    def get(self, request, *args, **kwargs):
+        serializer = serializers.BusOperatorProfileSerializer(request.user.busoperatorprofile_user)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
-    def patch(self, request, uuid, *args, **kwargs):
-        profile = models.BusOperatorProfile.objects.get(id=uuid)
-        serializer = serializers.BusOperatorProfileMediaSerializer(
-            profile, data=request.data, partial=False
+    def patch(self, request, *args, **kwargs):
+        serializer = serializers.BusOperatorProfileSerializer(
+            request.user.busoperatorprofile_user, data=request.data, partial=True, context={"request": request}
         )
         if serializer.is_valid():
             serializer.save()
@@ -106,24 +106,56 @@ class BusOperatorProfileMediaView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    def delete(self, request, uuid, *args, **kwargs):
-        operator = models.BusOperatorProfile.objects.get(id=uuid)
-        if operator.business_logo:
-            operator.business_logo.delete()
-        else:
-            return Response(
-                {
-                    "success": False,
-                    "errors": {
-                        "business_logo": "Can't delete field that is already null"
-                    },
-                },
-                status=status.HTTP_200_OK,
-            )
-        return Response(
-            {"success": True},
-            status=status.HTTP_200_OK,
-        )
+'''
+This Feature is for admins, but its not required as we cant allow admins to perform this also
+'''
+# class BusOperatorProfileMediaView(APIView):
+#     """
+#     Media access for Specific BusOperatorProfile
+#     """
+
+#     permission_classes = [BusOperatorOnly]
+
+#     def get(self, request, uuid, *args, **kwargs):
+#         profile = models.BusOperatorProfile.objects.get(id=uuid)
+#         serializer = serializers.BusOperatorProfileMediaSerializer(profile, many=False)
+#         return Response(
+#             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+#         )
+
+#     def patch(self, request, uuid, *args, **kwargs):
+#         profile = models.BusOperatorProfile.objects.get(id=uuid)
+#         serializer = serializers.BusOperatorProfileMediaSerializer(
+#             profile, data=request.data, partial=False
+#         )
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(
+#                 {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+#             )
+#         return Response(
+#             {"success": False, "errors": serializer.errors},
+#             status=status.HTTP_400_BAD_REQUEST,
+#         )
+
+#     def delete(self, request, uuid, *args, **kwargs):
+#         operator = models.BusOperatorProfile.objects.get(id=uuid)
+#         if operator.business_logo:
+#             operator.business_logo.delete()
+#         else:
+#             return Response(
+#                 {
+#                     "success": False,
+#                     "errors": {
+#                         "business_logo": "Can't delete field that is already null"
+#                     },
+#                 },
+#                 status=status.HTTP_200_OK,
+#             )
+#         return Response(
+#             {"success": True},
+#             status=status.HTTP_200_OK,
+#         )
 
 
 # Views for Current User
@@ -132,7 +164,7 @@ class ProfileMediaView(APIView):
     Media access for Current BusOperatorProfile
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [BusOperatorOnly]
 
     @method_decorator(decorators.bus_operator_profile_required)
     def get(self, request, profile, *args, **kwargs):

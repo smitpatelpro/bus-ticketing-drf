@@ -29,3 +29,15 @@ class BusOperatorProfile(BaseModel):
 
     def __str__(self) -> str:
         return "{} ({})".format(self.business_name, self.id)
+
+    def clean_ratings(self) -> int:
+        print("cleaned data:", self.cleaned_data)
+        ratings = self.cleaned_data.get("ratings",  False)
+        print(ratings)
+        return ratings
+    
+    def clean(self) -> dict:
+        print("cleaning")
+        cleaned_data = super().clean()
+        print("cleaned data:", cleaned_data)
+        return cleaned_data
