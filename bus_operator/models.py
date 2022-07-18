@@ -99,6 +99,11 @@ class BusStoppage(BaseModel):
     class Meta:
         verbose_name = "Bus Stop"
         verbose_name_plural = "Bus Stops"
+        unique_together = (
+            "bus",
+            "count",
+        )
+        ordering = ["bus","count"]
 
     def clean(self) -> None:
         if self.departure_time < self.arrival_time:

@@ -19,6 +19,7 @@ class BusAmenityAdmin(admin.ModelAdmin):
 
 @admin.register(models.BusStoppage)
 class BusStoppageAdmin(admin.ModelAdmin):
+    list_display = ("bus","count","name", "arrival_time", "departure_time", "distance", "journey_type")
     pass
 
 
