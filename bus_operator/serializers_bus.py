@@ -69,6 +69,7 @@ class BusSerializer(serializers.ModelSerializer):
         instance = models.Bus.objects.create(operator=profile, **validated_data)
         return instance
 
+
 class BusStoppageSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.BusStoppage

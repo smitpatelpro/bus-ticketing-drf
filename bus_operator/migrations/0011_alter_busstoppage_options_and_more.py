@@ -6,16 +6,20 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bus_operator', '0010_busstoppage_count'),
+        ("bus_operator", "0010_busstoppage_count"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='busstoppage',
-            options={'ordering': ['bus', 'count'], 'verbose_name': 'Bus Stop', 'verbose_name_plural': 'Bus Stops'},
+            name="busstoppage",
+            options={
+                "ordering": ["bus", "count"],
+                "verbose_name": "Bus Stop",
+                "verbose_name_plural": "Bus Stops",
+            },
         ),
         migrations.AlterUniqueTogether(
-            name='busstoppage',
-            unique_together={('bus', 'count')},
+            name="busstoppage",
+            unique_together={("bus", "count")},
         ),
     ]

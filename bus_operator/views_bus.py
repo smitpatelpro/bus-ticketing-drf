@@ -7,6 +7,7 @@ from common.serializers import MediaSerializer
 from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
 
+
 class BusListView(APIView):
     """
     List All Bus related to BusOperatorProfile
@@ -50,7 +51,10 @@ class BusDetailView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         serializer = serializers_bus.BusSerializer(bus)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
@@ -60,10 +64,11 @@ class BusDetailView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = serializers_bus.BusSerializer(
-            bus, data=request.data, partial=True
-        )
+            return Response(
+                {"success": False, "message": "Bus does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = serializers_bus.BusSerializer(bus, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(
@@ -73,6 +78,7 @@ class BusDetailView(APIView):
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
 
 # Bus Photos Views
 class BusPhotosListView(APIView):
@@ -86,7 +92,10 @@ class BusPhotosListView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         serializer = serializers_bus.BusSerializer(bus)
         return Response(
             {"success": True, "data": serializer.data["photos"]},
@@ -97,7 +106,10 @@ class BusPhotosListView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         serializer = MediaSerializer(data=request.data, partial=True)
         if serializer.is_valid():
             media = serializer.save()
@@ -123,7 +135,10 @@ class BusPhotosDetailView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         photo = bus.photos.filter(id=photo_uuid)
         if not photo:
             return Response({"success": False}, status=status.HTTP_404_NOT_FOUND)
@@ -132,6 +147,7 @@ class BusPhotosDetailView(APIView):
             {"success": True},
             status=status.HTTP_200_OK,
         )
+
 
 # Amenities Views
 class BusAmenitiesListView(APIView):
@@ -184,7 +200,10 @@ class BusAmenitiesDetailView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         amenity = models.BusAmenity.objects.filter(id=amenity_uuid).last()
         bus.amenities.add(amenity)
         return Response(
@@ -205,7 +224,10 @@ class BusStoppageListView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         stoppages = bus.busstoppage_bus.all()
         serializer = serializers_bus.BusStoppageSerializer(stoppages, many=True)
         return Response(
@@ -217,8 +239,11 @@ class BusStoppageListView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
-        request.data["bus"] = bus.id # Take and overwrite Bus id from URL parameter
+            return Response(
+                {"success": False, "message": "Bus does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        request.data["bus"] = bus.id  # Take and overwrite Bus id from URL parameter
         serializer = serializers_bus.BusStoppageSerializer(data=request.data)
         if serializer.is_valid():
             stoppage = serializer.save()
@@ -231,6 +256,7 @@ class BusStoppageListView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+
 class BusStoppageDetailView(APIView):
     """
     Get Details of specific bus
@@ -242,10 +268,16 @@ class BusStoppageDetailView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         stop = bus.busstoppage_bus.filter(id=stop_uuid).last()
         if not stop:
-            return Response({"success": False, "message": "Bus Stop does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus Stop does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         serializer = serializers_bus.BusStoppageSerializer(stop)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
@@ -255,10 +287,16 @@ class BusStoppageDetailView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         stop = bus.busstoppage_bus.filter(id=stop_uuid).last()
         if not stop:
-            return Response({"success": False, "message": "Bus Stop does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus Stop does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         serializer = serializers_bus.BusStoppageSerializer(
             stop, data=request.data, partial=True
         )
@@ -276,13 +314,18 @@ class BusStoppageDetailView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         stop = bus.busstoppage_bus.filter(id=stop_uuid).last()
         if not stop:
-            return Response({"success": False, "message": "Bus Stop does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus Stop does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         stop.delete()
         return Response(
             {"success": True},
             status=status.HTTP_200_OK,
         )
-

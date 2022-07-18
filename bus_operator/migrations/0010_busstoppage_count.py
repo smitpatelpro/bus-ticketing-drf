@@ -7,14 +7,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bus_operator', '0009_alter_bus_capacity'),
+        ("bus_operator", "0009_alter_bus_capacity"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='busstoppage',
-            name='count',
-            field=models.IntegerField(default=1, validators=[django.core.validators.MinValueValidator(0)]),
+            model_name="busstoppage",
+            name="count",
+            field=models.IntegerField(
+                default=1, validators=[django.core.validators.MinValueValidator(0)]
+            ),
             preserve_default=False,
         ),
     ]

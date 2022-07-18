@@ -93,7 +93,7 @@ class BusStoppage(BaseModel):
     departure_time = models.TimeField()
     distance = models.IntegerField(
         default=0, validators=[MinValueValidator(0), MaxValueValidator(2000)]
-    ) # Its distance from last stop
+    )  # Its distance from last stop
     journey_type = models.CharField(choices=JOURNEY_TYPES, max_length=20)
 
     class Meta:
@@ -103,7 +103,7 @@ class BusStoppage(BaseModel):
             "bus",
             "count",
         )
-        ordering = ["bus","count"]
+        ordering = ["bus", "count"]
 
     def clean(self) -> None:
         if self.departure_time < self.arrival_time:

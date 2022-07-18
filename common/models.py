@@ -16,8 +16,10 @@ class BaseModel(SoftDeleteObject, models.Model):
     class Meta:
         abstract = (True,)
 
+
 class SoftDeleteUserManager(UserManager, SoftDeleteManager):
     pass
+
 
 # Models
 class User(BaseModel, AbstractBaseUser):

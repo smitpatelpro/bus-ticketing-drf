@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bus_operator', '0011_alter_busstoppage_options_and_more'),
+        ("bus_operator", "0011_alter_busstoppage_options_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='busstoppage',
-            name='arrival_time',
+            model_name="busstoppage",
+            name="arrival_time",
             field=models.TimeField(),
         ),
         migrations.AlterField(
-            model_name='busstoppage',
-            name='departure_time',
+            model_name="busstoppage",
+            name="departure_time",
             field=models.TimeField(),
         ),
     ]
