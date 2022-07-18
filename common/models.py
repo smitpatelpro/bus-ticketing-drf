@@ -4,7 +4,7 @@ import uuid
 from .managers import UserManager
 from django.db.models import Manager, QuerySet
 from django.core.validators import MinLengthValidator
-from softdelete.models import SoftDeleteObject
+from softdelete.models import SoftDeleteObject, SoftDeleteManager
 
 # BASE Classes
 class BaseModel(SoftDeleteObject, models.Model):
@@ -16,10 +16,12 @@ class BaseModel(SoftDeleteObject, models.Model):
     class Meta:
         abstract = (True,)
 
+class SoftDeleteUserManager(UserManager, SoftDeleteManager):
+    pass
 
 # Models
 class User(BaseModel, AbstractBaseUser):
-    objects = UserManager()
+    objects = SoftDeleteUserManager()
     ROLES = (
         ("ADMIN", "ADMIN"),
         ("BUS_OPERATOR", "BUS_OPERATOR"),
