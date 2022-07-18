@@ -87,6 +87,7 @@ class BusStoppage(BaseModel):
     bus = models.ForeignKey(
         "Bus", on_delete=models.CASCADE, related_name="busstoppage_bus"
     )
+    count = models.IntegerField(validators=[MinValueValidator(0)])
     name = models.CharField(max_length=255)
     arrival_time = models.DateField()
     departure_time = models.DateField()
