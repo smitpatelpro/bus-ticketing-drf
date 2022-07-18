@@ -99,7 +99,7 @@ class BusOperatorProfileSerializer(serializers.ModelSerializer):
                 }
             )
         instance = models.BusOperatorProfile.objects.create(user=user, **validated_data)
-    
+
         return instance
 
     def update(self, instance, validated_data):
@@ -113,7 +113,6 @@ class BusOperatorProfileSerializer(serializers.ModelSerializer):
             # Email is only allowed to set in POST request, So, we are not updating it here.
             del validated_data["user"]  # Drop related user data for normal updation.
         return super().update(instance, validated_data)
-
 
 
 class BusOperatorProfileMediaSerializer(serializers.ModelSerializer):
