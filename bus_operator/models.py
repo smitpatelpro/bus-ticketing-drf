@@ -12,7 +12,7 @@ class BusOperatorProfile(BaseModel):
         ("REJECTED", "REJECTED"),
     )
     user = models.OneToOneField(
-        User, related_name="opertor_profile", on_delete=models.CASCADE
+        User, related_name="bus_operator_profile_user", on_delete=models.CASCADE
     )
     business_name = models.CharField(max_length=255)
     business_logo = models.ForeignKey(

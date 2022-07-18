@@ -138,7 +138,7 @@ class ProfileMediaView(APIView):
     @method_decorator(decorators.bus_operator_profile_required)
     def get(self, request, profile, *args, **kwargs):
         serializer = serializers_profile.BusOperatorProfileMediaSerializer(
-            profile, many=False
+            profile
         )
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
@@ -147,7 +147,7 @@ class ProfileMediaView(APIView):
     @method_decorator(decorators.bus_operator_profile_required)
     def patch(self, request, profile, *args, **kwargs):
         serializer = serializers_profile.BusOperatorProfileMediaSerializer(
-            profile, data=request.data, partial=False
+            profile, data=request.data, partial=True
         )
         if serializer.is_valid():
             serializer.save()

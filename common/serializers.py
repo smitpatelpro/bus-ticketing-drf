@@ -1,3 +1,4 @@
+from typing_extensions import Required
 from rest_framework import serializers
 from . import models
 
@@ -9,6 +10,7 @@ User = get_user_model()
 
 
 class MediaSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(required=True)
     class Meta:
         model = models.Media
         fields = [
