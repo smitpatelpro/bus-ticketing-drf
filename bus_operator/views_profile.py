@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
-from . import models, decorators, serializers_profile
+from . import models, serializers_profile
 from common.serializers import MediaSerializer
 from django.utils.decorators import method_decorator
 
@@ -135,15 +135,15 @@ class ProfileMediaView(APIView):
 
     permission_classes = [permissions.IsAuthenticated]
 
-    @method_decorator(decorators.bus_operator_profile_required)
-    def get(self, request, profile, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        profile = request.user.busoperatorprofile_user
         serializer = serializers_profile.BusOperatorProfileMediaSerializer(profile)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
-    @method_decorator(decorators.bus_operator_profile_required)
-    def patch(self, request, profile, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
+        profile = request.user.busoperatorprofile_user
         serializer = serializers_profile.BusOperatorProfileMediaSerializer(
             profile, data=request.data, partial=True
         )
@@ -157,8 +157,8 @@ class ProfileMediaView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    @method_decorator(decorators.bus_operator_profile_required)
-    def delete(self, request, profile, *args, **kwargs):
+    def delete(self, request, *args, **kwargs):
+        profile = request.user.busoperatorprofile_user
         if profile.business_logo:
             profile.business_logo.delete()
         else:
