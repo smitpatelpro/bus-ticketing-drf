@@ -12,12 +12,12 @@ class BusOperatorProfile(BaseModel):
         ("REJECTED", "REJECTED"),
     )
     user = models.OneToOneField(
-        User, related_name="bus_operator_profile_user", on_delete=models.CASCADE
+        User, related_name="busoperatorprofile_user", on_delete=models.CASCADE
     )
     business_name = models.CharField(max_length=255)
     business_logo = models.ForeignKey(
         "common.Media",
-        related_name="operator_business_logos",
+        related_name="busoperatorprofile_business_logo",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -38,7 +38,7 @@ class Bus(BaseModel):
         ("SLEEPER_DUPLEX", "SLEEPER_DUPLEX"),
     )
     operator = models.ForeignKey(
-        "BusOperatorProfile", related_name="buses", on_delete=models.CASCADE
+        "BusOperatorProfile", related_name="bus_operator", on_delete=models.CASCADE
     )
     name = models.CharField(max_length=255)
     type = models.CharField(choices=BUS_TYPES, max_length=20)
@@ -55,7 +55,7 @@ class BusAmenity(BaseModel):
 
 class BusUnavailability(BaseModel):
     bus = models.ForeignKey(
-        "Bus", on_delete=models.CASCADE, related_name="unavailabilities"
+        "Bus", on_delete=models.CASCADE, related_name="busunavailability_bus"
     )
     date = models.DateField()
     reason = models.TextField()
@@ -66,7 +66,7 @@ class BusStoppage(BaseModel):
         ("UP", "UP"),
         ("DOWN", "DOWN"),
     )
-    bus = models.ForeignKey("Bus", on_delete=models.CASCADE, related_name="stoppages")
+    bus = models.ForeignKey("Bus", on_delete=models.CASCADE, related_name="busstoppage_bus")
     name = models.CharField(max_length=255)
     departure_time = models.DateField()
     arrival_time = models.DateField()
