@@ -1,5 +1,7 @@
 from django.db import models
 from common.models import BaseModel
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -27,6 +29,10 @@ class BusOperatorProfile(BaseModel):
     approval_status = models.CharField(choices=APPROVAL_STATUS, max_length=20)
     rejection_comment = models.TextField(blank=True)
 
+    # class Meta:
+    #     verbose_name =  ('Bus Stop')
+    #     verbose_name_plural = ('Bus Stops')
+    
     def __str__(self) -> str:
         return "{} ({})".format(self.business_name, self.id)
 
@@ -42,14 +48,17 @@ class Bus(BaseModel):
     )
     name = models.CharField(max_length=255)
     type = models.CharField(choices=BUS_TYPES, max_length=20)
-    capacity = models.IntegerField(default=0)
-    per_km_fare = models.DecimalField(max_digits=6, decimal_places=2)
+    capacity = models.IntegerField(
+        default=0, validators=[MinValueValidator(0), MaxValueValidator(100)]
+    )
+    per_km_fare = models.DecimalField(
+        max_digits=6, decimal_places=2, validators=[MinValueValidator(0)]
+    )
     photos = models.ManyToManyField("common.Media", blank=True)
     amenities = models.ManyToManyField("BusAmenity", blank=True)
 
-
 class BusAmenity(BaseModel):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
 
 
@@ -60,15 +69,34 @@ class BusUnavailability(BaseModel):
     date = models.DateField()
     reason = models.TextField()
 
+    class Meta:
+        unique_together = ('bus', 'date',)
+
 
 class BusStoppage(BaseModel):
     JOURNEY_TYPES = (
         ("UP", "UP"),
         ("DOWN", "DOWN"),
     )
-    bus = models.ForeignKey("Bus", on_delete=models.CASCADE, related_name="busstoppage_bus")
+    bus = models.ForeignKey(
+        "Bus", on_delete=models.CASCADE, related_name="busstoppage_bus"
+    )
     name = models.CharField(max_length=255)
-    departure_time = models.DateField()
     arrival_time = models.DateField()
-    distance = models.IntegerField(default=0)
+    departure_time = models.DateField()
+    distance = models.IntegerField(
+        default=0, validators=[MinValueValidator(0), MaxValueValidator(2000)]
+    )
     journey_type = models.CharField(choices=JOURNEY_TYPES, max_length=20)
+
+    class Meta:
+        verbose_name =  ('Bus Stop')
+        verbose_name_plural = ('Bus Stops')
+
+    def clean(self):
+        if self.departure_time < self.arrival_time:
+            raise ValidationError(
+                {
+                    "departure_time": "Departure time must be greater or equal to arrival time."
+                }
+            )

@@ -164,10 +164,16 @@ class BusAmenitiesDetailView(APIView):
     def delete(self, request, profile, uuid, amenity_uuid, *args, **kwargs):
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False, "message":"Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Bus does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         amenity = bus.amenities.filter(id=amenity_uuid)
         if not amenity:
-            return Response({"success": False, "message":"Amenity does not exists"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Amenity does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         bus.amenities.remove(amenity)
         return Response(
             {"success": True},

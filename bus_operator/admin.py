@@ -15,3 +15,13 @@ class BusAdmin(admin.ModelAdmin):
 @admin.register(models.BusAmenity)
 class BusAmenityAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(models.BusStoppage)
+class BusStoppageAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(models.BusUnavailability)
+class BusUnavailabilityAdmin(admin.ModelAdmin):
+    pass

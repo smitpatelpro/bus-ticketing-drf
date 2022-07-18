@@ -11,6 +11,7 @@ User = get_user_model()
 
 class MediaSerializer(serializers.ModelSerializer):
     file = serializers.FileField(required=True)
+
     class Meta:
         model = models.Media
         fields = [

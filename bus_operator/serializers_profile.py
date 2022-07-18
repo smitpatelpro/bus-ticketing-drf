@@ -115,12 +115,12 @@ class BusOperatorProfileMediaSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         # if "business_logo" in validated_data:
-            # Validate Mandatory Fields
-            # if "file" not in validated_data["business_logo"]:
-            #     raise serializers.ValidationError(
-            #         {"success": False, "errors": {"file": ["This field is required."]}}
-            #     )
-            # if media objects present, then delete existing and create new one
+        # Validate Mandatory Fields
+        # if "file" not in validated_data["business_logo"]:
+        #     raise serializers.ValidationError(
+        #         {"success": False, "errors": {"file": ["This field is required."]}}
+        #     )
+        # if media objects present, then delete existing and create new one
         if instance.business_logo:
             instance.business_logo.delete()
 
