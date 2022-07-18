@@ -35,10 +35,6 @@ class BusOperatorProfile(BaseModel):
     approval_status = models.CharField(choices=APPROVAL_STATUS, max_length=20)
     rejection_comment = models.TextField(blank=True)
 
-    # class Meta:
-    #     verbose_name =  ('Bus Stop')
-    #     verbose_name_plural = ('Bus Stops')
-
     def __str__(self) -> str:
         return "{} ({})".format(self.business_name, self.id)
 
@@ -55,7 +51,7 @@ class Bus(BaseModel):
     name = models.CharField(max_length=255)
     type = models.CharField(choices=BUS_TYPES, max_length=20)
     capacity = models.IntegerField(
-        default=0, validators=[MinValueValidator(0), MaxValueValidator(100)]
+        validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
     per_km_fare = models.DecimalField(
         max_digits=6, decimal_places=2, validators=[MinValueValidator(0)]
@@ -103,7 +99,7 @@ class BusStoppage(BaseModel):
         verbose_name = "Bus Stop"
         verbose_name_plural = "Bus Stops"
 
-    def clean(self):
+    def clean(self) -> None:
         if self.departure_time < self.arrival_time:
             raise ValidationError(
                 {

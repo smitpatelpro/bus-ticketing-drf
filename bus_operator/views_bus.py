@@ -7,7 +7,6 @@ from common.serializers import MediaSerializer
 from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
 
-
 class BusListView(APIView):
     """
     List All Bus related to BusOperatorProfile
@@ -26,7 +25,7 @@ class BusListView(APIView):
     def post(self, request, *args, **kwargs):
         profile = request.user.busoperatorprofile_user
         serializer = serializers_bus.BusSerializer(
-            data=request.data, partial=True, context={"profile": profile}
+            data=request.data, context={"profile": profile}
         )
         if serializer.is_valid():
             serializer.save()
@@ -47,7 +46,7 @@ class BusDetailView(APIView):
 
     permission_classes = [BusOperatorOnly]
 
-    def get(self, request, profile, uuid, *args, **kwargs):
+    def get(self, request, uuid, *args, **kwargs):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
@@ -57,13 +56,13 @@ class BusDetailView(APIView):
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
-    def patch(self, request, profile, uuid, *args, **kwargs):
+    def patch(self, request, uuid, *args, **kwargs):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
             return Response({"success": False}, status=status.HTTP_404_NOT_FOUND)
         serializer = serializers_bus.BusSerializer(
-            bus, data=request.data, partial=False
+            bus, data=request.data, partial=True
         )
         if serializer.is_valid():
             serializer.save()
@@ -75,7 +74,7 @@ class BusDetailView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-
+# Bus Photos Views
 class BusPhotosListView(APIView):
     """
     List View for BusPhotos
@@ -134,7 +133,7 @@ class BusPhotosDetailView(APIView):
             status=status.HTTP_200_OK,
         )
 
-
+# Amenities Views
 class BusAmenitiesListView(APIView):
     """
     List View for BusAmenities
@@ -175,7 +174,7 @@ class BusAmenitiesDetailView(APIView):
                 {"success": False, "message": "Amenity does not exists"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        bus.amenities.remove(amenity)
+        bus.amenities.remove(amenity_uuid)
         return Response(
             {"success": True},
             status=status.HTTP_200_OK,
