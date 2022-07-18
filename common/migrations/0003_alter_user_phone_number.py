@@ -7,13 +7,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('common', '0002_user_created_at_user_deleted_at_user_updated_at_and_more'),
+        ("common", "0002_user_created_at_user_deleted_at_user_updated_at_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='phone_number',
-            field=models.CharField(max_length=20, validators=[django.core.validators.MinLengthValidator]),
+            model_name="user",
+            name="phone_number",
+            field=models.CharField(
+                max_length=20, validators=[django.core.validators.MinLengthValidator]
+            ),
         ),
     ]

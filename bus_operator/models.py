@@ -26,17 +26,19 @@ class BusOperatorProfile(BaseModel):
         blank=True,
     )
     office_address = models.TextField()
-    ratings = models.IntegerField(null=True, blank=True, default=None, validators=[
-            MaxValueValidator(10),
-            MinValueValidator(0)
-        ])
+    ratings = models.IntegerField(
+        null=True,
+        blank=True,
+        default=None,
+        validators=[MaxValueValidator(10), MinValueValidator(0)],
+    )
     approval_status = models.CharField(choices=APPROVAL_STATUS, max_length=20)
     rejection_comment = models.TextField(blank=True)
 
     # class Meta:
     #     verbose_name =  ('Bus Stop')
     #     verbose_name_plural = ('Bus Stops')
-    
+
     def __str__(self) -> str:
         return "{} ({})".format(self.business_name, self.id)
 
@@ -61,6 +63,7 @@ class Bus(BaseModel):
     photos = models.ManyToManyField("common.Media", blank=True)
     amenities = models.ManyToManyField("BusAmenity", blank=True)
 
+
 class BusAmenity(BaseModel):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
@@ -74,7 +77,10 @@ class BusUnavailability(BaseModel):
     reason = models.TextField()
 
     class Meta:
-        unique_together = ('bus', 'date',)
+        unique_together = (
+            "bus",
+            "date",
+        )
 
 
 class BusStoppage(BaseModel):
@@ -94,8 +100,8 @@ class BusStoppage(BaseModel):
     journey_type = models.CharField(choices=JOURNEY_TYPES, max_length=20)
 
     class Meta:
-        verbose_name =  ('Bus Stop')
-        verbose_name_plural = ('Bus Stops')
+        verbose_name = "Bus Stop"
+        verbose_name_plural = "Bus Stops"
 
     def clean(self):
         if self.departure_time < self.arrival_time:

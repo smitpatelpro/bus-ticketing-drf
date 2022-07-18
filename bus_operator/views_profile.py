@@ -77,6 +77,7 @@ class BusOperatorProfileDetailView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+
 # Bus Operator Profile Views
 class ProfileDetailView(APIView):
     """
@@ -87,14 +88,19 @@ class ProfileDetailView(APIView):
     permission_classes = [BusOperatorOnly]
 
     def get(self, request, *args, **kwargs):
-        serializer = serializers_profile.BusOperatorProfileSerializer(request.user.busoperatorprofile_user)
+        serializer = serializers_profile.BusOperatorProfileSerializer(
+            request.user.busoperatorprofile_user
+        )
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
     def patch(self, request, *args, **kwargs):
         serializer = serializers_profile.BusOperatorProfileSerializer(
-            request.user.busoperatorprofile_user, data=request.data, partial=True, context={"request": request}
+            request.user.busoperatorprofile_user,
+            data=request.data,
+            partial=True,
+            context={"request": request},
         )
         if serializer.is_valid():
             serializer.save()
@@ -106,9 +112,10 @@ class ProfileDetailView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-'''
+
+"""
 This Feature is for admins, but its not required as we cant allow admins to perform this also
-'''
+"""
 # class BusOperatorProfileMediaView(APIView):
 #     """
 #     Media access for Specific BusOperatorProfile

@@ -5,6 +5,7 @@ from rest_framework import permissions
 from bus_operator import serializers_profile, serializers_bus
 from bus_operator import models as models_operator
 
+
 class AmenitiesListView(APIView):
     """
     List View for ALL Bus Amenities

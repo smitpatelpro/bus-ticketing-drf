@@ -6,21 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bus_operator', '0005_alter_bus_capacity_alter_bus_operator_and_more'),
+        ("bus_operator", "0005_alter_bus_capacity_alter_bus_operator_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='busstoppage',
-            options={'verbose_name': 'Bus Stop', 'verbose_name_plural': 'Bus Stops'},
+            name="busstoppage",
+            options={"verbose_name": "Bus Stop", "verbose_name_plural": "Bus Stops"},
         ),
         migrations.AlterField(
-            model_name='busamenity',
-            name='name',
+            model_name="busamenity",
+            name="name",
             field=models.CharField(max_length=255, unique=True),
         ),
         migrations.AlterUniqueTogether(
-            name='busunavailability',
-            unique_together={('bus', 'date')},
+            name="busunavailability",
+            unique_together={("bus", "date")},
         ),
     ]
