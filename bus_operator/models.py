@@ -3,6 +3,7 @@ from common.models import BaseModel
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 User = get_user_model()
 
@@ -25,7 +26,10 @@ class BusOperatorProfile(BaseModel):
         blank=True,
     )
     office_address = models.TextField()
-    ratings = models.IntegerField(null=True, blank=True, default=None)
+    ratings = models.IntegerField(null=True, blank=True, default=None, validators=[
+            MaxValueValidator(10),
+            MinValueValidator(0)
+        ])
     approval_status = models.CharField(choices=APPROVAL_STATUS, max_length=20)
     rejection_comment = models.TextField(blank=True)
 

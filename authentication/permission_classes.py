@@ -4,12 +4,12 @@ from bus_operator import models as models_operator
 
 class BusOperatorOnly(permissions.BasePermission):
 
-    edit_methods = "PATCH"
+    # edit_methods = "PATCH"
 
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
-
+        
         if request.user.role != "BUS_OPERATOR":
             return False
 

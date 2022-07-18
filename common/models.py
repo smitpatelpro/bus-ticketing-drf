@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser
 import uuid
 from .managers import UserManager
 from django.db.models import Manager, QuerySet
+from django.core.validators import MinLengthValidator
 from softdelete.models import SoftDeleteObject
 
 # BASE Classes
@@ -30,7 +31,7 @@ class User(BaseModel, AbstractBaseUser):
         unique=True,
     )
     full_name = models.CharField(max_length=255)
-    phone_number = models.CharField(max_length=20)
+    phone_number = models.CharField(max_length=20, validators=[MinLengthValidator])
     role = models.CharField(choices=ROLES, max_length=20)
     is_active = models.BooleanField(default=True)
     staff = models.BooleanField(default=False)  # a admin user; non super-user
