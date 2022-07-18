@@ -50,8 +50,8 @@ class BusDetailView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False}, status=status.HTTP_404_NOT_FOUND)
-        serializer = serializers_bus.BusSerializer(bus, many=False)
+            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = serializers_bus.BusSerializer(bus)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
@@ -60,7 +60,7 @@ class BusDetailView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
         serializer = serializers_bus.BusSerializer(
             bus, data=request.data, partial=True
         )
@@ -86,8 +86,8 @@ class BusPhotosListView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False}, status=status.HTTP_404_NOT_FOUND)
-        serializer = serializers_bus.BusSerializer(bus, many=False)
+            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = serializers_bus.BusSerializer(bus)
         return Response(
             {"success": True, "data": serializer.data["photos"]},
             status=status.HTTP_200_OK,
@@ -97,7 +97,7 @@ class BusPhotosListView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
         serializer = MediaSerializer(data=request.data, partial=True)
         if serializer.is_valid():
             media = serializer.save()
@@ -123,7 +123,7 @@ class BusPhotosDetailView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
         photo = bus.photos.filter(id=photo_uuid)
         if not photo:
             return Response({"success": False}, status=status.HTTP_404_NOT_FOUND)
@@ -146,7 +146,7 @@ class BusAmenitiesListView(APIView):
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
             return Response({"success": False}, status=status.HTTP_404_NOT_FOUND)
-        serializer = serializers_bus.BusSerializer(bus, many=False)
+        serializer = serializers_bus.BusSerializer(bus)
         return Response(
             {"success": True, "data": serializer.data["amenities"]},
             status=status.HTTP_200_OK,
@@ -184,10 +184,105 @@ class BusAmenitiesDetailView(APIView):
         profile = request.user.busoperatorprofile_user
         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
         if not bus:
-            return Response({"success": False}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
         amenity = models.BusAmenity.objects.filter(id=amenity_uuid).last()
         bus.amenities.add(amenity)
         return Response(
             {"success": True},
             status=status.HTTP_200_OK,
         )
+
+
+# BusStoppage Views
+class BusStoppageListView(APIView):
+    """
+    List View for BusStoppage
+    """
+
+    permission_classes = [BusOperatorOnly]
+
+    def get(self, request, uuid, *args, **kwargs):
+        profile = request.user.busoperatorprofile_user
+        bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
+        if not bus:
+            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+        stoppages = bus.busstoppage_bus.all()
+        serializer = serializers_bus.BusStoppageSerializer(stoppages, many=True)
+        return Response(
+            {"success": True, "data": serializer.data},
+            status=status.HTTP_200_OK,
+        )
+
+    def post(self, request, uuid, *args, **kwargs):
+        profile = request.user.busoperatorprofile_user
+        bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
+        if not bus:
+            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+        request.data["bus"] = bus.id # Take and overwrite Bus id from URL parameter
+        serializer = serializers_bus.BusStoppageSerializer(data=request.data)
+        if serializer.is_valid():
+            stoppage = serializer.save()
+            return Response(
+                {"success": True, "data": serializer.data},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+class BusStoppageDetailView(APIView):
+    """
+    Get Details of specific bus
+    """
+
+    permission_classes = [BusOperatorOnly]
+
+    def get(self, request, uuid, stop_uuid, *args, **kwargs):
+        profile = request.user.busoperatorprofile_user
+        bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
+        if not bus:
+            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+        stop = bus.busstoppage_bus.filter(id=stop_uuid).last()
+        if not stop:
+            return Response({"success": False, "message": "Bus Stop does not exists"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = serializers_bus.BusStoppageSerializer(stop)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+    def patch(self, request, uuid, stop_uuid, *args, **kwargs):
+        profile = request.user.busoperatorprofile_user
+        bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
+        if not bus:
+            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+        stop = bus.busstoppage_bus.filter(id=stop_uuid).last()
+        if not stop:
+            return Response({"success": False, "message": "Bus Stop does not exists"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = serializers_bus.BusStoppageSerializer(
+            stop, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, uuid, stop_uuid, *args, **kwargs):
+        profile = request.user.busoperatorprofile_user
+        bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
+        if not bus:
+            return Response({"success": False, "message": "Bus does not exists"}, status=status.HTTP_404_NOT_FOUND)
+        stop = bus.busstoppage_bus.filter(id=stop_uuid).last()
+        if not stop:
+            return Response({"success": False, "message": "Bus Stop does not exists"}, status=status.HTTP_404_NOT_FOUND)
+        stop.delete()
+        return Response(
+            {"success": True},
+            status=status.HTTP_200_OK,
+        )
+

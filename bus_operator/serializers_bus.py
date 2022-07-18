@@ -68,3 +68,17 @@ class BusSerializer(serializers.ModelSerializer):
         profile = self.context.get("profile")
         instance = models.Bus.objects.create(operator=profile, **validated_data)
         return instance
+
+class BusStoppageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BusStoppage
+        fields = [
+            "id",
+            "bus",
+            "count",
+            "name",
+            "arrival_time",
+            "departure_time",
+            "distance",
+            "journey_type",
+        ]

@@ -89,11 +89,11 @@ class BusStoppage(BaseModel):
     )
     count = models.IntegerField(validators=[MinValueValidator(0)])
     name = models.CharField(max_length=255)
-    arrival_time = models.DateField()
-    departure_time = models.DateField()
+    arrival_time = models.TimeField()
+    departure_time = models.TimeField()
     distance = models.IntegerField(
         default=0, validators=[MinValueValidator(0), MaxValueValidator(2000)]
-    )
+    ) # Its distance from last stop
     journey_type = models.CharField(choices=JOURNEY_TYPES, max_length=20)
 
     class Meta:
