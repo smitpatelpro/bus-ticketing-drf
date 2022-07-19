@@ -20,6 +20,7 @@ class BusOperatorProfileSerializer(serializers.ModelSerializer):
     approval_status = serializers.CharField(read_only=True)
     rejection_comment = serializers.CharField(read_only=True)
     business_logo = MediaSerializer(read_only=True)
+
     class Meta:
         model = models.BusOperatorProfile
         fields = [
@@ -47,11 +48,11 @@ class BusOperatorProfileSerializer(serializers.ModelSerializer):
             users = User.objects.filter(email=value)
             if users.exists():
                 raise serializers.ValidationError(
-                {
-                    "success": False,
-                    "errors": ["user with given email id already exists"],
-                }
-            )
+                    {
+                        "success": False,
+                        "errors": ["user with given email id already exists"],
+                    }
+                )
         return value
 
     @transaction.atomic
@@ -62,7 +63,7 @@ class BusOperatorProfileSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         del validated_data["user"]
-        
+
         instance = models.BusOperatorProfile.objects.create(user=user, **validated_data)
         return instance
 

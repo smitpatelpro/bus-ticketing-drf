@@ -12,26 +12,87 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('common', '0003_alter_user_phone_number'),
+        ("common", "0003_alter_user_phone_number"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CustomerProfile',
+            name="CustomerProfile",
             fields=[
-                ('deleted_at', models.DateTimeField(blank=True, db_index=True, default=None, editable=False, null=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('gender', models.CharField(choices=[('MALE', 'MALE'), ('FEMALE', 'FEMALE'), ('BISEXUAL', 'BISEXUAL')], max_length=10)),
-                ('address', models.TextField()),
-                ('address_proof', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='customerprofile_addressproof', to='common.media')),
-                ('id_proof', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='customerprofile_idproof', to='common.media')),
-                ('other_kyc_document', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='customerprofile_otherkycdocument', to='common.media')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='customerprofile_user', to=settings.AUTH_USER_MODEL)),
+                (
+                    "deleted_at",
+                    models.DateTimeField(
+                        blank=True,
+                        db_index=True,
+                        default=None,
+                        editable=False,
+                        null=True,
+                    ),
+                ),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "gender",
+                    models.CharField(
+                        choices=[
+                            ("MALE", "MALE"),
+                            ("FEMALE", "FEMALE"),
+                            ("BISEXUAL", "BISEXUAL"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                ("address", models.TextField()),
+                (
+                    "address_proof",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="customerprofile_addressproof",
+                        to="common.media",
+                    ),
+                ),
+                (
+                    "id_proof",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="customerprofile_idproof",
+                        to="common.media",
+                    ),
+                ),
+                (
+                    "other_kyc_document",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="customerprofile_otherkycdocument",
+                        to="common.media",
+                    ),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="customerprofile_user",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

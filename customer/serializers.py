@@ -47,11 +47,11 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
             users = User.objects.filter(email=value)
             if users.exists():
                 raise serializers.ValidationError(
-                {
-                    "success": False,
-                    "errors": ["user with given email id already exists"],
-                }
-            )
+                    {
+                        "success": False,
+                        "errors": ["user with given email id already exists"],
+                    }
+                )
         return value
 
     @transaction.atomic
@@ -62,7 +62,7 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         del validated_data["user"]
-        
+
         instance = models.CustomerProfile.objects.create(user=user, **validated_data)
         return instance
 
@@ -77,4 +77,3 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
             # Email is only allowed to set in POST request, So, we are not updating it here.
             del validated_data["user"]  # Drop related user data for normal updation.
         return super().update(instance, validated_data)
-

@@ -49,6 +49,7 @@ class AdminGetOnlyOperatorPostPatchOnly(permissions.BasePermission):
 
         return False
 
+
 class AdminGetOnlyCustomerPostPatchOnly(permissions.BasePermission):
     SAFE_METHODS = ["HEAD", "OPTIONS"]  # GET is not safe method here
 
