@@ -13,9 +13,9 @@ urlpatterns = [
     ),
     path(
         v1_base + "bus_operators/<uuid>",
-        views_profile.BusOperatorProfileDetailView.as_view(),
+        views_profile.BusOperatorProfileView.as_view(),
     ),
-    path(v1_base + "bus_operators", views_profile.BusOperatorProfileListView.as_view()),
+    path(v1_base + "bus_operators", views_profile.BusOperatorProfileView.as_view()),
     # For admin only
     # path(
     #     v1_base + "bus_operators/<uuid>/media",

@@ -9,22 +9,33 @@ from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
 
 
-class BusOperatorProfileListView(APIView):
+class BusOperatorProfileView(APIView):
     """
     List View for ALL BusOperatorProfile objects
     it is responsible to perform operation on collection of object
     """
 
-    permission_classes = [AdminGetOnlyOperatorPostPatchOnly]
+    permission_classes = [AdminGetPatchOnlyOperatorPostOnly]
 
-    def get(self, request, *args, **kwargs):
-        objs = models.BusOperatorProfile.objects.all()
-        serializer = serializers_profile.BusOperatorProfileSerializer(objs, many=True)
+    def get(self, request, uuid=None, *args, **kwargs):
+        if uuid:
+            try:
+                objs = models.BusOperatorProfile.objects.get(id=uuid)
+            except models.BusOperatorProfile.DoesNotExist:
+                return Response(
+                    {"success": False, "message": "Resource does not exists"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            serializer = serializers_profile.BusOperatorProfileSerializer(objs, many=False)
+        else:
+            objs = models.BusOperatorProfile.objects.all()
+            serializer = serializers_profile.BusOperatorProfileSerializer(objs, many=True)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, uuid=None, *args, **kwargs):
         serializer = serializers_profile.BusOperatorProfileSerializer(
             data=request.data, context={"request": request}
         )
@@ -38,44 +49,65 @@ class BusOperatorProfileListView(APIView):
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
-
-class BusOperatorProfileDetailView(APIView):
-    """
-    Details View for Specific BusOperatorProfile objects
-    Only for admin
-    """
-
-    permission_classes = [AdminOnly]
-
-    def get(self, request, uuid, *args, **kwargs):
-        try:
+    
+    # TODO: Resolve permission issue for request with uuid
+    def patch(self, request, uuid=None, *args, **kwargs):
+        if not uuid==None:
             objs = models.BusOperatorProfile.objects.get(id=uuid)
-        except models.BusOperatorProfile.DoesNotExist:
+            serializer = serializers_profile.BusOperatorProfileSerializer(
+                objs, data=request.data, partial=True, context={"request": request}
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+                )
             return Response(
-                {"success": False, "message": "Resource does not exists"},
+                {"success": False, "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        else:
+            return Response(
+                {"success": False, "message":"PATCH is not permitted on collection"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer = serializers_profile.BusOperatorProfileSerializer(objs, many=False)
-        return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
+# class BusOperatorProfileDetailView(APIView):
+#     """
+#     Details View for Specific BusOperatorProfile objects
+#     Only for admin
+#     """
 
-    def patch(self, request, uuid, *args, **kwargs):
-        objs = models.BusOperatorProfile.objects.get(id=uuid)
-        serializer = serializers_profile.BusOperatorProfileSerializer(
-            objs, data=request.data, partial=True, context={"request": request}
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-            )
-        return Response(
-            {"success": False, "errors": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+#     permission_classes = [AdminOnly]
+
+#     def get(self, request, uuid, *args, **kwargs):
+#         try:
+#             objs = models.BusOperatorProfile.objects.get(id=uuid)
+#         except models.BusOperatorProfile.DoesNotExist:
+#             return Response(
+#                 {"success": False, "message": "Resource does not exists"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         serializer = serializers_profile.BusOperatorProfileSerializer(objs, many=False)
+#         return Response(
+#             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+#         )
+
+#     def patch(self, request, uuid, *args, **kwargs):
+#         objs = models.BusOperatorProfile.objects.get(id=uuid)
+#         serializer = serializers_profile.BusOperatorProfileSerializer(
+#             objs, data=request.data, partial=True, context={"request": request}
+#         )
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(
+#                 {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+#             )
+#         return Response(
+#             {"success": False, "errors": serializer.errors},
+#             status=status.HTTP_400_BAD_REQUEST,
+#         )
 
 
 # Bus Operator Profile Views

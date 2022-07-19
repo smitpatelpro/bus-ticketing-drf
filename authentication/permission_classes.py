@@ -39,7 +39,7 @@ class AdminOnly(permissions.BasePermission):
         return False
 
 
-class AdminGetOnlyOperatorPostPatchOnly(permissions.BasePermission):
+class AdminGetPatchOnlyOperatorPostOnly(permissions.BasePermission):
     SAFE_METHODS = ["HEAD", "OPTIONS"]  # GET is not safe method here
 
     def has_permission(self, request, view):
@@ -49,16 +49,16 @@ class AdminGetOnlyOperatorPostPatchOnly(permissions.BasePermission):
         if request.method in self.SAFE_METHODS:
             return True
 
-        if request.method == "GET" and request.user.role == "ADMIN":
+        if request.method in ["GET", "PATCH"] and request.user.role == "ADMIN":
             return True
 
-        if request.method in ["POST", "PATCH"] and request.user.role == "BUS_OPERATOR":
+        if request.method == "POST" and request.user.role == "BUS_OPERATOR":
             return True
 
         return False
 
 
-class AdminGetOnlyCustomerPostPatchOnly(permissions.BasePermission):
+class AdminGetPatchOnlyCustomerPostOnly(permissions.BasePermission):
     SAFE_METHODS = ["HEAD", "OPTIONS"]  # GET is not safe method here
 
     def has_permission(self, request, view):
@@ -67,11 +67,11 @@ class AdminGetOnlyCustomerPostPatchOnly(permissions.BasePermission):
 
         if request.method in self.SAFE_METHODS:
             return True
-
-        if request.method == "GET" and request.user.role == "ADMIN":
+        
+        if request.method in ["GET", "PATCH"] and request.user.role == "ADMIN":
             return True
 
-        if request.method in ["POST", "PATCH"] and request.user.role == "CUSTOMER":
+        if request.method == "POST" and request.user.role == "CUSTOMER":
             return True
 
         return False

@@ -9,22 +9,34 @@ from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
 
 
-class CustomerProfileListView(APIView):
+class CustomerProfileView(APIView):
     """
     List View for ALL CustomerProfile objects
     it is responsible to perform operation on collection of object
     """
 
-    permission_classes = [AdminGetOnlyCustomerPostPatchOnly]
+    permission_classes = [AdminGetPatchOnlyCustomerPostOnly]
 
-    def get(self, request, *args, **kwargs):
-        objs = models.CustomerProfile.objects.all()
-        serializer = serializers.CustomerProfileSerializer(objs, many=True)
+    def get(self, request, uuid=None, *args, **kwargs):
+        if uuid:
+            try:
+                objs = models.CustomerProfile.objects.get(id=uuid)
+            except models.CustomerProfile.DoesNotExist:
+                return Response(
+                    {"success": False, "message": "Resource does not exists"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            serializer = serializers.CustomerProfileSerializer(objs, many=False)
+        else:
+            objs = models.CustomerProfile.objects.all()
+            serializer = serializers.CustomerProfileSerializer(objs, many=True)
+        
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, uuid=None, *args, **kwargs):
         serializer = serializers.CustomerProfileSerializer(
             data=request.data, context={"request": request}
         )
@@ -39,32 +51,7 @@ class CustomerProfileListView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-
-class CustomerProfileDetailView(APIView):
-    """
-    Details View for Specific CustomerProfile objects
-    Only for admin
-    """
-
-    permission_classes = [AdminOnly]
-
-    # TODO: merge detail view with list view above
-    def get(self, request, uuid=None, *args, **kwargs):
-        try:
-            objs = models.CustomerProfile.objects.get(id=uuid)
-        except models.CustomerProfile.DoesNotExist:
-            return Response(
-                {"success": False, "message": "Resource does not exists"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        serializer = serializers.CustomerProfileSerializer(objs, many=False)
-        return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
-
-    # TODO: put this patch to above view
-    def patch(self, request, uuid, *args, **kwargs):
+    def patch(self, request, uuid=None, *args, **kwargs):
         objs = models.CustomerProfile.objects.get(id=uuid)
         serializer = serializers.CustomerProfileSerializer(
             objs, data=request.data, partial=True, context={"request": request}
@@ -78,6 +65,45 @@ class CustomerProfileDetailView(APIView):
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+# class CustomerProfileDetailView(APIView):
+#     """
+#     Details View for Specific CustomerProfile objects
+#     Only for admin
+#     """
+
+#     permission_classes = [AdminOnly]
+
+#     # TODO: merge detail view with list view above
+#     def get(self, request, uuid=None, *args, **kwargs):
+#         try:
+#             objs = models.CustomerProfile.objects.get(id=uuid)
+#         except models.CustomerProfile.DoesNotExist:
+#             return Response(
+#                 {"success": False, "message": "Resource does not exists"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         serializer = serializers.CustomerProfileSerializer(objs, many=False)
+#         return Response(
+#             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+#         )
+
+#     # TODO: put this patch to above view
+#     def patch(self, request, uuid, *args, **kwargs):
+#         objs = models.CustomerProfile.objects.get(id=uuid)
+#         serializer = serializers.CustomerProfileSerializer(
+#             objs, data=request.data, partial=True, context={"request": request}
+#         )
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(
+#                 {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+#             )
+#         return Response(
+#             {"success": False, "errors": serializer.errors},
+#             status=status.HTTP_400_BAD_REQUEST,
+#         )
 
 
 # Customer Profile Views
