@@ -1,11 +1,9 @@
 from rest_framework import permissions
 from bus_operator import models as models_operator
+from customer import models as models_customer
 
 
 class BusOperatorOnly(permissions.BasePermission):
-
-    # edit_methods = "PATCH"
-
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
@@ -20,10 +18,22 @@ class BusOperatorOnly(permissions.BasePermission):
         return True
 
 
+class CustomerOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
+        if request.user.role != "CUSTOMER":
+            return False
+
+        profile = models_customer.CustomerProfile.objects.filter(user=request.user)
+        if not profile.exists():
+            return False
+
+        return True
+
+
 class AdminOnly(permissions.BasePermission):
-
-    # edit_methods = ("PATCH")
-
     def has_permission(self, request, view):
         if request.user.is_authenticated and request.user.role == "ADMIN":
             return True

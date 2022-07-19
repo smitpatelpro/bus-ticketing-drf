@@ -77,3 +77,72 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
             # Email is only allowed to set in POST request, So, we are not updating it here.
             del validated_data["user"]  # Drop related user data for normal updation.
         return super().update(instance, validated_data)
+
+
+class CustomerProfileMediaSerializer(serializers.ModelSerializer):
+    id_proof = MediaSerializer()
+    address_proof = MediaSerializer()
+    other_kyc_document = MediaSerializer()
+
+    class Meta:
+        model = models.CustomerProfile
+        fields = [
+            "id_proof",
+            "address_proof",
+            "other_kyc_document",
+        ]
+    
+    def validate(self, data):
+        # Validate Mandatory Fields only on POST request
+        request = self.context.get("request", None)
+        if request and getattr(request, "method", None) == "PATCH":
+            print(data)
+            if "id_proof" in data:
+                if "file" not in data["id_proof"]:
+                    raise serializers.ValidationError(
+                        {
+                            "success": False,
+                            "errors": {"id_proof.file": ["This field is required."]},
+                        }
+                    )
+            if "address_proof" in data:
+                if "file" not in data["address_proof"]:
+                    raise serializers.ValidationError(
+                        {
+                            "success": False,
+                            "errors": {"address_proof.file": ["This field is required."]},
+                        }
+                    )
+            if "other_kyc_document" in data:
+                if "file" not in data["other_kyc_document"]:
+                    raise serializers.ValidationError(
+                        {
+                            "success": False,
+                            "errors": {"other_kyc_document.file": ["This field is required."]},
+                        }
+                    )
+        
+        return data
+
+    def update(self, instance, validated_data):
+        # if media objects present, then delete existing and create new one
+        if "id_proof" in validated_data:
+            if instance.id_proof:
+                instance.id_proof.delete()
+            media = Media.objects.create(file=validated_data["id_proof"]["file"])
+            instance.id_proof = media
+
+        if "address_proof" in validated_data:
+            if instance.address_proof:
+                instance.address_proof.delete()
+            media = Media.objects.create(file=validated_data["address_proof"]["file"])
+            instance.address_proof = media
+
+        if "other_kyc_document" in validated_data:
+            if instance.other_kyc_document:
+                instance.other_kyc_document.delete()
+            media = Media.objects.create(file=validated_data["other_kyc_document"]["file"])
+            instance.other_kyc_document = media
+
+        instance.save(update_fields=["id_proof", "address_proof", "other_kyc_document"])
+        return instance
