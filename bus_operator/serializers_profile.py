@@ -41,65 +41,29 @@ class BusOperatorProfileSerializer(serializers.ModelSerializer):
         password_validation.validate_password(value, self.instance)
         return value
 
-    # # Validate Mandatory Fields only on POST request
-    # def validate(self, data):
-    #     request = self.context.get("request", None)
-    #     if request and getattr(request, "method", None) == "POST":
-    #         if "password" not in data:
-    #             raise serializers.ValidationError(
-    #                 {
-    #                     "success": False,
-    #                     "errors": {"password": ["This field is required."]},
-    #                 }
-    #             )
-    #         if "user" in data:
-    #             # Validate Mandatory Fields
-    #             if "email" not in data["user"]:
-    #                 raise serializers.ValidationError(
-    #                     {
-    #                         "success": False,
-    #                         "errors": {"email": ["This field is required."]},
-    #                     }
-    #                 )
-    #             if "full_name" not in data["user"]:
-    #                 raise serializers.ValidationError(
-    #                     {
-    #                         "success": False,
-    #                         "errors": {"full_name": ["This field is required."]},
-    #                     }
-    #                 )
-    #         else:
-    #             raise serializers.ValidationError(
-    #                 {
-    #                     "success": False,
-    #                     "errors": {
-    #                         "full_name": ["This field is required."],
-    #                         "email": ["This field is required."],
-    #                         # "phone_number": ["This field is required."],
-    #                     },
-    #                 }
-    #             )
-    #     return data
-
-    @transaction.atomic
-    def create(self, validated_data):
-        # Create User Objects
-        try:
-            password = validated_data.pop("password")
-            user = User.objects.create(role="BUS_OPERATOR", **validated_data["user"])
-            user.set_password(password)
-            user.save()
-            del validated_data["user"]
-
-        except IntegrityError as e:
-            raise serializers.ValidationError(
+    def validate_email(self, value):
+        request = self.context.get("request", None)
+        if request and getattr(request, "method", None) == "POST":
+            users = User.objects.filter(email=value)
+            if users.exists():
+                raise serializers.ValidationError(
                 {
                     "success": False,
                     "errors": ["user with given email id already exists"],
                 }
             )
-        instance = models.BusOperatorProfile.objects.create(user=user, **validated_data)
+        return value
 
+    @transaction.atomic
+    def create(self, validated_data):
+        # Create User Objects
+        password = validated_data.pop("password")
+        user = User.objects.create(role="BUS_OPERATOR", **validated_data["user"])
+        user.set_password(password)
+        user.save()
+        del validated_data["user"]
+        
+        instance = models.BusOperatorProfile.objects.create(user=user, **validated_data)
         return instance
 
     def update(self, instance, validated_data):

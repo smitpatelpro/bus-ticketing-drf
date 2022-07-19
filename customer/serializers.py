@@ -42,29 +42,28 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
         return value
 
     def validate_email(self, value):
-        print("validated")
-        # password_validation.validate_password(value, self.instance)
-        return value
-
-    @transaction.atomic
-    def create(self, validated_data):
-        # Create User Objects
-        try:
-            password = validated_data.pop("password")
-            user = User.objects.create(role="BUS_OPERATOR", **validated_data["user"])
-            user.set_password(password)
-            user.save()
-            del validated_data["user"]
-
-        except IntegrityError as e:
-            raise serializers.ValidationError(
+        request = self.context.get("request", None)
+        if request and getattr(request, "method", None) == "POST":
+            users = User.objects.filter(email=value)
+            if users.exists():
+                raise serializers.ValidationError(
                 {
                     "success": False,
                     "errors": ["user with given email id already exists"],
                 }
             )
-        instance = models.CustomerProfile.objects.create(user=user, **validated_data)
+        return value
 
+    @transaction.atomic
+    def create(self, validated_data):
+        # Create User Objects
+        password = validated_data.pop("password")
+        user = User.objects.create(role="BUS_OPERATOR", **validated_data["user"])
+        user.set_password(password)
+        user.save()
+        del validated_data["user"]
+        
+        instance = models.CustomerProfile.objects.create(user=user, **validated_data)
         return instance
 
     def update(self, instance, validated_data):
