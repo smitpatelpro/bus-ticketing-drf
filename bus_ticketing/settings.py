@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "common",
     "bus_admin",
     "bus_operator",
+    "customer",
 ]
 
 MIDDLEWARE = [

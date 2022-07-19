@@ -24,6 +24,7 @@ urlpatterns = [
     path("", include("bus_admin.urls")),
     path("", include("bus_operator.urls")),
     path("", include("authentication.urls")),
+    path("", include("customer.urls")),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
