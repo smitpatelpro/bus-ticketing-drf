@@ -8,25 +8,24 @@ class BusOperatorOnly(permissions.BasePermission):
         if not request.user.is_authenticated or request.user.role != "BUS_OPERATOR":
             return False
 
-        # TODO: Lazyload operator profile using request.user.busoperator_user
-        profile = models_operator.BusOperatorProfile.objects.filter(user=request.user)
-        if not profile.exists():
-            return False
+        if hasattr(request.user, "busoperatorprofile_user") and (request.user.busoperatorprofile_user is not None) and request.user.busoperatorprofile_user.deleted_at is None:
+            return True
+        
+        # # TODO: Lazyload operator profile using request.user.busoperator_user
+        # profile = models_operator.BusOperatorProfile.objects.filter(user=request.user)
+        # if not profile.exists():
+        #     return False
 
-        return True
+        return False
 
 
 class CustomerOnly(permissions.BasePermission):
     def has_permission(self, request, view):
-        if not request.user.is_authenticated:
+        if not request.user.is_authenticated or request.user.role != "CUSTOMER":
             return False
 
-        if request.user.role != "CUSTOMER":
-            return False
-
-        profile = models_customer.CustomerProfile.objects.filter(user=request.user)
-        if not profile.exists():
-            return False
+        if hasattr(request.user, "customerprofile_user") and (request.user.customerprofile_user is not None) and request.user.customerprofile_user.deleted_at is None:
+            return True
 
         return True
 
