@@ -89,16 +89,6 @@ class BusOperatorProfileMediaSerializer(serializers.ModelSerializer):
             "business_logo",
         ]
 
-    def update(self, instance, validated_data):
-        # if media objects present, then delete existing and create new one
-        if instance.business_logo:
-            instance.business_logo.delete()
-
-        media = Media.objects.create(file=validated_data["business_logo"]["file"])
-        instance.business_logo = media
-        instance.save(update_fields=["business_logo"])
-        return instance
-
     def validate(self, data):
         # Validate Mandatory Fields only on POST request
         request = self.context.get("request", None)
@@ -121,3 +111,13 @@ class BusOperatorProfileMediaSerializer(serializers.ModelSerializer):
                     }
                 )
         return data
+
+    def update(self, instance, validated_data):
+        # if media objects present, then delete existing and create new one
+        if instance.business_logo:
+            instance.business_logo.delete()
+
+        media = Media.objects.create(file=validated_data["business_logo"]["file"])
+        instance.business_logo = media
+        instance.save(update_fields=["business_logo"])
+        return instance
