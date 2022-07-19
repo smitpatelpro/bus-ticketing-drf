@@ -5,12 +5,10 @@ from customer import models as models_customer
 
 class BusOperatorOnly(permissions.BasePermission):
     def has_permission(self, request, view):
-        if not request.user.is_authenticated:
+        if not request.user.is_authenticated or request.user.role != "BUS_OPERATOR":
             return False
 
-        if request.user.role != "BUS_OPERATOR":
-            return False
-
+        # TODO: Lazyload operator profile using request.user.busoperator_user
         profile = models_operator.BusOperatorProfile.objects.filter(user=request.user)
         if not profile.exists():
             return False

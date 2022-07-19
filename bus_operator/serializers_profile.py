@@ -81,7 +81,7 @@ class BusOperatorProfileSerializer(serializers.ModelSerializer):
 
 
 class BusOperatorProfileMediaSerializer(serializers.ModelSerializer):
-    business_logo = MediaSerializer()
+    business_logo = MediaSerializer(required=True)
 
     class Meta:
         model = models.BusOperatorProfile
@@ -89,34 +89,12 @@ class BusOperatorProfileMediaSerializer(serializers.ModelSerializer):
             "business_logo",
         ]
 
-    def validate(self, data):
-        # Validate Mandatory Fields only on POST request
-        request = self.context.get("request", None)
-        if request and getattr(request, "method", None) == "PATCH":
-            print(data)
-            if "business_logo" not in data:
-                raise serializers.ValidationError(
-                    {
-                        "success": False,
-                        "errors": {
-                            "business_logo": ["This field is required."],
-                        },
-                    }
-                )
-            if "file" not in data["business_logo"]:
-                raise serializers.ValidationError(
-                    {
-                        "success": False,
-                        "errors": {"business_logo.file": ["This field is required."]},
-                    }
-                )
-        return data
-
     def update(self, instance, validated_data):
         # if media objects present, then delete existing and create new one
         if instance.business_logo:
             instance.business_logo.delete()
-
+        print(validated_data)
+        # raise Exception(validated_data["business_logo"])
         media = Media.objects.create(file=validated_data["business_logo"]["file"])
         instance.business_logo = media
         instance.save(update_fields=["business_logo"])

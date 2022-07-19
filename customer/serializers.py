@@ -92,42 +92,6 @@ class CustomerProfileMediaSerializer(serializers.ModelSerializer):
             "other_kyc_document",
         ]
 
-    def validate(self, data):
-        # Validate Mandatory Fields only on POST request
-        request = self.context.get("request", None)
-        if request and getattr(request, "method", None) == "PATCH":
-            print(data)
-            if "id_proof" in data:
-                if "file" not in data["id_proof"]:
-                    raise serializers.ValidationError(
-                        {
-                            "success": False,
-                            "errors": {"id_proof.file": ["This field is required."]},
-                        }
-                    )
-            if "address_proof" in data:
-                if "file" not in data["address_proof"]:
-                    raise serializers.ValidationError(
-                        {
-                            "success": False,
-                            "errors": {
-                                "address_proof.file": ["This field is required."]
-                            },
-                        }
-                    )
-            if "other_kyc_document" in data:
-                if "file" not in data["other_kyc_document"]:
-                    raise serializers.ValidationError(
-                        {
-                            "success": False,
-                            "errors": {
-                                "other_kyc_document.file": ["This field is required."]
-                            },
-                        }
-                    )
-
-        return data
-
     def update(self, instance, validated_data):
         # if media objects present, then delete existing and create new one
         if "id_proof" in validated_data:

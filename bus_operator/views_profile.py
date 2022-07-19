@@ -183,7 +183,7 @@ class ProfileMediaView(APIView):
     def patch(self, request, *args, **kwargs):
         profile = request.user.busoperatorprofile_user
         serializer = serializers_profile.BusOperatorProfileMediaSerializer(
-            profile, data=request.data, partial=True
+            profile, data=request.data, partial=False
         )
         if serializer.is_valid():
             serializer.save()

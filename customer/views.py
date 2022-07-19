@@ -48,7 +48,8 @@ class CustomerProfileDetailView(APIView):
 
     permission_classes = [AdminOnly]
 
-    def get(self, request, uuid, *args, **kwargs):
+    # TODO: merge detail view with list view above
+    def get(self, request, uuid=None, *args, **kwargs):
         try:
             objs = models.CustomerProfile.objects.get(id=uuid)
         except models.CustomerProfile.DoesNotExist:
@@ -62,6 +63,7 @@ class CustomerProfileDetailView(APIView):
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
+    # TODO: put this patch to above view
     def patch(self, request, uuid, *args, **kwargs):
         objs = models.CustomerProfile.objects.get(id=uuid)
         serializer = serializers.CustomerProfileSerializer(
