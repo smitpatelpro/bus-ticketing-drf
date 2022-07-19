@@ -91,7 +91,7 @@ class CustomerProfileMediaSerializer(serializers.ModelSerializer):
             "address_proof",
             "other_kyc_document",
         ]
-    
+
     def validate(self, data):
         # Validate Mandatory Fields only on POST request
         request = self.context.get("request", None)
@@ -110,7 +110,9 @@ class CustomerProfileMediaSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(
                         {
                             "success": False,
-                            "errors": {"address_proof.file": ["This field is required."]},
+                            "errors": {
+                                "address_proof.file": ["This field is required."]
+                            },
                         }
                     )
             if "other_kyc_document" in data:
@@ -118,10 +120,12 @@ class CustomerProfileMediaSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(
                         {
                             "success": False,
-                            "errors": {"other_kyc_document.file": ["This field is required."]},
+                            "errors": {
+                                "other_kyc_document.file": ["This field is required."]
+                            },
                         }
                     )
-        
+
         return data
 
     def update(self, instance, validated_data):
@@ -141,7 +145,9 @@ class CustomerProfileMediaSerializer(serializers.ModelSerializer):
         if "other_kyc_document" in validated_data:
             if instance.other_kyc_document:
                 instance.other_kyc_document.delete()
-            media = Media.objects.create(file=validated_data["other_kyc_document"]["file"])
+            media = Media.objects.create(
+                file=validated_data["other_kyc_document"]["file"]
+            )
             instance.other_kyc_document = media
 
         instance.save(update_fields=["id_proof", "address_proof", "other_kyc_document"])
