@@ -19,7 +19,7 @@ class BusOperatorProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
     approval_status = serializers.CharField(read_only=True)
     rejection_comment = serializers.CharField(read_only=True)
-
+    business_logo = MediaSerializer(read_only=True)
     class Meta:
         model = models.BusOperatorProfile
         fields = [
