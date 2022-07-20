@@ -27,10 +27,14 @@ class BusOperatorProfileView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            serializer = serializers_profile.BusOperatorProfileSerializer(objs, many=False)
+            serializer = serializers_profile.BusOperatorProfileSerializer(
+                objs, many=False
+            )
         else:
             objs = models.BusOperatorProfile.objects.all()
-            serializer = serializers_profile.BusOperatorProfileSerializer(objs, many=True)
+            serializer = serializers_profile.BusOperatorProfileSerializer(
+                objs, many=True
+            )
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
@@ -49,10 +53,10 @@ class BusOperatorProfileView(APIView):
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    
+
     # TODO: Resolve permission issue for request with uuid
     def patch(self, request, uuid=None, *args, **kwargs):
-        if not uuid==None:
+        if not uuid == None:
             objs = models.BusOperatorProfile.objects.get(id=uuid)
             serializer = serializers_profile.BusOperatorProfileSerializer(
                 objs, data=request.data, partial=True, context={"request": request}
@@ -60,7 +64,8 @@ class BusOperatorProfileView(APIView):
             if serializer.is_valid():
                 serializer.save()
                 return Response(
-                    {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+                    {"success": True, "data": serializer.data},
+                    status=status.HTTP_200_OK,
                 )
             return Response(
                 {"success": False, "errors": serializer.errors},
@@ -68,9 +73,10 @@ class BusOperatorProfileView(APIView):
             )
         else:
             return Response(
-                {"success": False, "message":"PATCH is not permitted on collection"},
+                {"success": False, "message": "PATCH is not permitted on collection"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
 
 # class BusOperatorProfileDetailView(APIView):
 #     """

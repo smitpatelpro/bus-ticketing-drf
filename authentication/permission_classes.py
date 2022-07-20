@@ -8,9 +8,13 @@ class BusOperatorOnly(permissions.BasePermission):
         if not request.user.is_authenticated or request.user.role != "BUS_OPERATOR":
             return False
 
-        if hasattr(request.user, "busoperatorprofile_user") and (request.user.busoperatorprofile_user is not None) and request.user.busoperatorprofile_user.deleted_at is None:
+        if (
+            hasattr(request.user, "busoperatorprofile_user")
+            and (request.user.busoperatorprofile_user is not None)
+            and request.user.busoperatorprofile_user.deleted_at is None
+        ):
             return True
-        
+
         # # TODO:[Done] Lazyload operator profile using request.user.busoperator_user:
         # profile = models_operator.BusOperatorProfile.objects.filter(user=request.user)
         # if not profile.exists():
@@ -24,7 +28,11 @@ class CustomerOnly(permissions.BasePermission):
         if not request.user.is_authenticated or request.user.role != "CUSTOMER":
             return False
 
-        if hasattr(request.user, "customerprofile_user") and (request.user.customerprofile_user is not None) and request.user.customerprofile_user.deleted_at is None:
+        if (
+            hasattr(request.user, "customerprofile_user")
+            and (request.user.customerprofile_user is not None)
+            and request.user.customerprofile_user.deleted_at is None
+        ):
             return True
 
         return True
@@ -66,7 +74,7 @@ class AdminGetPatchOnlyCustomerPostOnly(permissions.BasePermission):
 
         if request.method in self.SAFE_METHODS:
             return True
-        
+
         if request.method in ["GET", "PATCH"] and request.user.role == "ADMIN":
             return True
 

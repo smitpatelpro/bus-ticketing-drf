@@ -31,7 +31,7 @@ class CustomerProfileView(APIView):
         else:
             objs = models.CustomerProfile.objects.all()
             serializer = serializers.CustomerProfileSerializer(objs, many=True)
-        
+
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
@@ -65,6 +65,7 @@ class CustomerProfileView(APIView):
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
 
 # class CustomerProfileDetailView(APIView):
 #     """
