@@ -47,29 +47,6 @@ class BusAmenitySerializer(serializers.ModelSerializer):
             "description",
         ]
 
-
-class BusSerializer(serializers.ModelSerializer):
-    photos = MediaSerializer(many=True, read_only=True)
-    amenities = BusAmenitySerializer(many=True, read_only=True)
-
-    class Meta:
-        model = models.Bus
-        fields = [
-            "id",
-            "name",
-            "type",
-            "capacity",
-            "per_km_fare",
-            "photos",
-            "amenities",
-        ]
-
-    def create(self, validated_data):
-        profile = self.context.get("profile")
-        instance = models.Bus.objects.create(operator=profile, **validated_data)
-        return instance
-
-
 class BusStoppageSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.BusStoppage
@@ -80,6 +57,32 @@ class BusStoppageSerializer(serializers.ModelSerializer):
             "name",
             "arrival_time",
             "departure_time",
-            "distance",
+            "distance_from_last_stop",
             "journey_type",
         ]
+
+
+class BusSerializer(serializers.ModelSerializer):
+    photos = MediaSerializer(many=True, read_only=True)
+    amenities = BusAmenitySerializer(many=True, read_only=True)
+    stops = BusStoppageSerializer(source="busstoppage_bus",many=True)
+    class Meta:
+        model = models.Bus
+        fields = [
+            "id",
+            "name",
+            "operator",
+            "type",
+            "capacity",
+            "per_km_fare",
+            "photos",
+            "amenities",
+            "stops",
+        ]
+
+    def create(self, validated_data):
+        profile = self.context.get("profile")
+        instance = models.Bus.objects.create(operator=profile, **validated_data)
+        return instance
+
+

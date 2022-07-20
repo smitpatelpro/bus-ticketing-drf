@@ -1,7 +1,13 @@
 from django.contrib import admin
 from . import models
 
+# Inlines
+class BusStoppageInline(admin.TabularInline):
+    model = models.BusStoppage
+    ordering = ["count"]
 
+
+# Model Admin
 @admin.register(models.BusOperatorProfile)
 class BusOperatorProfileAdmin(admin.ModelAdmin):
     pass
@@ -9,6 +15,8 @@ class BusOperatorProfileAdmin(admin.ModelAdmin):
 
 @admin.register(models.Bus)
 class BusAdmin(admin.ModelAdmin):
+    list_display = ("id","name", "operator", "capacity")
+    inlines = [BusStoppageInline,]
     pass
 
 
@@ -26,7 +34,7 @@ class BusStoppageAdmin(admin.ModelAdmin):
         "name",
         "arrival_time",
         "departure_time",
-        "distance",
+        "distance_from_last_stop",
         "journey_type",
     )
 

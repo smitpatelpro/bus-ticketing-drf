@@ -26,6 +26,7 @@ urlpatterns = [
 # Bus Endpoints
 urlpatterns += [
     path(v1_base + "buses", views_bus.BusListView.as_view()),
+    path(v1_base + "buses/search", views_bus.BusSearchView.as_view()),
     path(v1_base + "buses/<uuid>", views_bus.BusDetailView.as_view()),
     # Photos
     path(v1_base + "buses/<uuid>/photos", views_bus.BusPhotosListView.as_view()),

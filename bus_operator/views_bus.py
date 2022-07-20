@@ -6,8 +6,8 @@ from . import models, serializers_bus
 from common.serializers import MediaSerializer
 from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
-
-
+from django.db.models import Q
+from datetime import datetime
 class BusListView(APIView):
     """
     List All Bus related to BusOperatorProfile
@@ -328,4 +328,76 @@ class BusStoppageDetailView(APIView):
         return Response(
             {"success": True},
             status=status.HTTP_200_OK,
+        )
+
+
+class BusSearchView(APIView):
+    '''
+    It facilitate Searching and Sorting of Buses based on input parameters
+    '''
+    permission_classes = [CustomerOnly]
+
+    def get(self, request, *args, **kwargs):
+        from_place = request.GET.get("from")
+        to_place = request.GET.get("to")
+
+        departure_start_time = request.GET.get("departure_start_time")
+        departure_end_time = request.GET.get("departure_end_time")
+        operator = request.GET.get("operator")
+        type = request.GET.getlist("type")
+        amenities = request.GET.getlist("amenities")
+        order_by = request.GET.getlist("order_by")
+        # print("amenities:",amenities)
+
+        # stoppages = models.BusStoppage.objects.filter(Q(name__unaccent__icontains=from_place) | Q(name__unaccent__icontains=to_place)).values_list("bus", flat=True) # will works only for Postgresql
+        stoppages = models.BusStoppage.objects.filter(Q(name__icontains=from_place) | Q(name__icontains=to_place))
+        # print("before filter:",stoppages )
+
+        # Filter
+        format = "%H:%M:%S"
+        if departure_start_time:
+            departure_start_time = datetime.strptime(departure_start_time, format).time()
+            # print("departure_start_time",departure_start_time)
+            stoppages = stoppages.exclude(Q(departure_time__lt=departure_start_time) & Q(name__icontains=from_place))
+        if departure_end_time:
+            departure_end_time = datetime.strptime(departure_end_time, format).time()
+            # print("departure_end_time",departure_end_time)
+            stoppages = stoppages.exclude(Q(departure_time__gt=departure_end_time) & Q(name__icontains=from_place))
+
+        # print("after filter:",stoppages )
+        bus_ids=stoppages.values_list("bus",flat=True).distinct()
+        # print(bus_ids)
+        bus_list = []
+        for bus_id in bus_ids:
+            from_stop = stoppages.filter(name__icontains=from_place, bus=bus_id).first()
+            to_stop = stoppages.filter(name__icontains=to_place, bus=bus_id).last()
+            if from_stop and to_stop and from_stop.count < to_stop.count:
+               bus_list.append(bus_id) 
+            
+            # from_stop = stoppages.filter(name__icontains=from_place, bus=bus_id, journey_type="DOWN").first()
+            # to_stop = stoppages.filter(name__icontains=to_place, bus=bus_id, journey_type="DOWN").last()
+            # if from_stop and to_stop and from_stop.count > to_stop.count:
+            #    bus_list.append(bus_id)
+
+
+        buses = models.Bus.objects.filter(id__in= bus_list)
+        # Filters
+        if operator:
+            buses = buses.filter(operator=operator)
+        if type:
+            buses = buses.filter(type__in=type)
+        if order_by:
+            try:
+                # TODO: validate if this has security holes
+                buses = buses.order_by(order_by[0])
+            except:
+                return Response(
+                    {"success": False, "message": "Invalid order_by values"}, status=status.HTTP_200_OK
+                )
+        if amenities:
+            buses = buses.filter(amenities__in=amenities)
+
+        serializer = serializers_bus.BusSerializer(buses, many=True)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
