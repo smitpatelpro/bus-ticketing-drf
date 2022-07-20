@@ -8,6 +8,8 @@ from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
 from django.db.models import Q
 from datetime import datetime
+
+
 class BusListView(APIView):
     """
     List All Bus related to BusOperatorProfile
@@ -332,9 +334,10 @@ class BusStoppageDetailView(APIView):
 
 
 class BusSearchView(APIView):
-    '''
+    """
     It facilitate Searching and Sorting of Buses based on input parameters
-    '''
+    """
+
     permission_classes = [CustomerOnly]
 
     def get(self, request, *args, **kwargs):
@@ -350,37 +353,45 @@ class BusSearchView(APIView):
         # print("amenities:",amenities)
 
         # stoppages = models.BusStoppage.objects.filter(Q(name__unaccent__icontains=from_place) | Q(name__unaccent__icontains=to_place)).values_list("bus", flat=True) # will works only for Postgresql
-        stoppages = models.BusStoppage.objects.filter(Q(name__icontains=from_place) | Q(name__icontains=to_place))
+        stoppages = models.BusStoppage.objects.filter(
+            Q(name__icontains=from_place) | Q(name__icontains=to_place)
+        )
         # print("before filter:",stoppages )
 
         # Filter
         format = "%H:%M:%S"
         if departure_start_time:
-            departure_start_time = datetime.strptime(departure_start_time, format).time()
+            departure_start_time = datetime.strptime(
+                departure_start_time, format
+            ).time()
             # print("departure_start_time",departure_start_time)
-            stoppages = stoppages.exclude(Q(departure_time__lt=departure_start_time) & Q(name__icontains=from_place))
+            stoppages = stoppages.exclude(
+                Q(departure_time__lt=departure_start_time)
+                & Q(name__icontains=from_place)
+            )
         if departure_end_time:
             departure_end_time = datetime.strptime(departure_end_time, format).time()
             # print("departure_end_time",departure_end_time)
-            stoppages = stoppages.exclude(Q(departure_time__gt=departure_end_time) & Q(name__icontains=from_place))
+            stoppages = stoppages.exclude(
+                Q(departure_time__gt=departure_end_time) & Q(name__icontains=from_place)
+            )
 
         # print("after filter:",stoppages )
-        bus_ids=stoppages.values_list("bus",flat=True).distinct()
+        bus_ids = stoppages.values_list("bus", flat=True).distinct()
         # print(bus_ids)
         bus_list = []
         for bus_id in bus_ids:
             from_stop = stoppages.filter(name__icontains=from_place, bus=bus_id).first()
             to_stop = stoppages.filter(name__icontains=to_place, bus=bus_id).last()
             if from_stop and to_stop and from_stop.count < to_stop.count:
-               bus_list.append(bus_id) 
-            
+                bus_list.append(bus_id)
+
             # from_stop = stoppages.filter(name__icontains=from_place, bus=bus_id, journey_type="DOWN").first()
             # to_stop = stoppages.filter(name__icontains=to_place, bus=bus_id, journey_type="DOWN").last()
             # if from_stop and to_stop and from_stop.count > to_stop.count:
             #    bus_list.append(bus_id)
 
-
-        buses = models.Bus.objects.filter(id__in= bus_list)
+        buses = models.Bus.objects.filter(id__in=bus_list)
         # Filters
         if operator:
             buses = buses.filter(operator=operator)
@@ -392,7 +403,8 @@ class BusSearchView(APIView):
                 buses = buses.order_by(order_by[0])
             except:
                 return Response(
-                    {"success": False, "message": "Invalid order_by values"}, status=status.HTTP_200_OK
+                    {"success": False, "message": "Invalid order_by values"},
+                    status=status.HTTP_200_OK,
                 )
         if amenities:
             buses = buses.filter(amenities__in=amenities)

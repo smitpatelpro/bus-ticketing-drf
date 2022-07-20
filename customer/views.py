@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
 from bus_operator import serializers_bus
 
+
 class CustomerProfileView(APIView):
     """
     List View for ALL CustomerProfile objects

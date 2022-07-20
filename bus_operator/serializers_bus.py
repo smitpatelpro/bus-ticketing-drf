@@ -47,6 +47,7 @@ class BusAmenitySerializer(serializers.ModelSerializer):
             "description",
         ]
 
+
 class BusStoppageSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.BusStoppage
@@ -65,7 +66,8 @@ class BusStoppageSerializer(serializers.ModelSerializer):
 class BusSerializer(serializers.ModelSerializer):
     photos = MediaSerializer(many=True, read_only=True)
     amenities = BusAmenitySerializer(many=True, read_only=True)
-    stops = BusStoppageSerializer(source="busstoppage_bus",many=True)
+    stops = BusStoppageSerializer(source="busstoppage_bus", many=True)
+
     class Meta:
         model = models.Bus
         fields = [
@@ -84,5 +86,3 @@ class BusSerializer(serializers.ModelSerializer):
         profile = self.context.get("profile")
         instance = models.Bus.objects.create(operator=profile, **validated_data)
         return instance
-
-

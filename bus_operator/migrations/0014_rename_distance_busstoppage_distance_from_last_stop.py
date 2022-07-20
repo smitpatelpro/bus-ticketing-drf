@@ -6,13 +6,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bus_operator', '0013_alter_busstoppage_options_alter_busstoppage_count'),
+        ("bus_operator", "0013_alter_busstoppage_options_alter_busstoppage_count"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='busstoppage',
-            old_name='distance',
-            new_name='distance_from_last_stop',
+            model_name="busstoppage",
+            old_name="distance",
+            new_name="distance_from_last_stop",
         ),
     ]

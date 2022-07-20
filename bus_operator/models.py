@@ -112,3 +112,35 @@ class BusStoppage(BaseModel):
                     "departure_time": "Departure time must be greater or equal to arrival time."
                 }
             )
+
+
+class Ticket(BaseModel):
+    PAYMENT_STATUS = (
+        ("REGULAR", "REGULAR"),
+        ("SLEEPER", "SLEEPER"),
+        ("SLEEPER_DUPLEX", "SLEEPER_DUPLEX"),
+    )
+
+    customer = models.ForeignKey(
+        "customer.CustomerProfile",
+        related_name="ticket_customer",
+        on_delete=models.CASCADE,
+    )
+    bus = models.ForeignKey("Bus", on_delete=models.CASCADE, related_name="ticket_bus")
+    journey_date = models.DateField()
+    start_bus_stop = models.ForeignKey(
+        "BusStoppage", on_delete=models.CASCADE, related_name="ticket_start_bus_stop"
+    )
+    end_bus_stop = models.ForeignKey(
+        "BusStoppage", on_delete=models.CASCADE, related_name="ticket_end_bus_stop"
+    )
+    number = models.CharField(max_length=255)
+    invoice_number = models.CharField(max_length=255)
+    transaction_id = models.CharField(max_length=255)
+    rating = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(10)]
+    )
+    payment_status = models.CharField(choices=PAYMENT_STATUS, max_length=20)
+    amount = models.DecimalField(
+        max_digits=6, decimal_places=2, validators=[MinValueValidator(0)]
+    )

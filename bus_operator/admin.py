@@ -15,8 +15,10 @@ class BusOperatorProfileAdmin(admin.ModelAdmin):
 
 @admin.register(models.Bus)
 class BusAdmin(admin.ModelAdmin):
-    list_display = ("id","name", "operator", "capacity")
-    inlines = [BusStoppageInline,]
+    list_display = ("id", "name", "operator", "capacity")
+    inlines = [
+        BusStoppageInline,
+    ]
     pass
 
 

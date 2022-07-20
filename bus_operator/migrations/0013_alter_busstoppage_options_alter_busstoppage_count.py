@@ -7,17 +7,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bus_operator', '0012_alter_busstoppage_arrival_time_and_more'),
+        ("bus_operator", "0012_alter_busstoppage_arrival_time_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='busstoppage',
-            options={'ordering': ['bus', 'count', 'journey_type'], 'verbose_name': 'Bus Stop', 'verbose_name_plural': 'Bus Stops'},
+            name="busstoppage",
+            options={
+                "ordering": ["bus", "count", "journey_type"],
+                "verbose_name": "Bus Stop",
+                "verbose_name_plural": "Bus Stops",
+            },
         ),
         migrations.AlterField(
-            model_name='busstoppage',
-            name='count',
-            field=models.IntegerField(validators=[django.core.validators.MinValueValidator(1)]),
+            model_name="busstoppage",
+            name="count",
+            field=models.IntegerField(
+                validators=[django.core.validators.MinValueValidator(1)]
+            ),
         ),
     ]
