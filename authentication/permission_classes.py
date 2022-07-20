@@ -11,7 +11,7 @@ class BusOperatorOnly(permissions.BasePermission):
         if hasattr(request.user, "busoperatorprofile_user") and (request.user.busoperatorprofile_user is not None) and request.user.busoperatorprofile_user.deleted_at is None:
             return True
         
-        # # TODO: Lazyload operator profile using request.user.busoperator_user
+        # # TODO:[Done] Lazyload operator profile using request.user.busoperator_user:
         # profile = models_operator.BusOperatorProfile.objects.filter(user=request.user)
         # if not profile.exists():
         #     return False
