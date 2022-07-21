@@ -1,5 +1,7 @@
 from ast import operator
 from asyncore import read
+from importlib.metadata import requires
+from typing_extensions import Required
 from rest_framework import serializers
 from . import models
 from django.db import transaction
@@ -81,7 +83,8 @@ class BusJourneySerializer(serializers.ModelSerializer):
 class BusSerializer(serializers.ModelSerializer):
     photos = MediaSerializer(many=True, read_only=True)
     amenities = BusAmenitySerializer(many=True, read_only=True)
-    journey = BusJourneySerializer(source="busjourney_bus", many=True)
+    operator = serializers.CharField(required=False)
+    journey = BusJourneySerializer(source="busjourney_bus", many=True, read_only=True)
 
     class Meta:
         model = models.Bus
