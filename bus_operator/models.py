@@ -133,8 +133,6 @@ class BusJourney(BaseModel):
     journey_type = models.CharField(choices=JOURNEY_TYPES, max_length=20)
 
     class Meta:
-        # verbose_name = "Bus Stop"
-        # verbose_name_plural = "Bus Stops"
         unique_together = (
             "bus",
             "sequence",

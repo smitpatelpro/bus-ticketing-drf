@@ -62,11 +62,26 @@ class BusStoppageSerializer(serializers.ModelSerializer):
             "journey_type",
         ]
 
+class BusJourneySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BusJourney
+        fields = [
+            "id",
+            "bus",
+            "sequence",
+            "from_place",
+            "to_place",
+            "start_time",
+            "end_time",
+            "distance",
+            "journey_type",
+        ]
+
 
 class BusSerializer(serializers.ModelSerializer):
     photos = MediaSerializer(many=True, read_only=True)
     amenities = BusAmenitySerializer(many=True, read_only=True)
-    stops = BusStoppageSerializer(source="busstoppage_bus", many=True)
+    journey = BusJourneySerializer(source="busjourney_bus", many=True)
 
     class Meta:
         model = models.Bus
@@ -79,7 +94,7 @@ class BusSerializer(serializers.ModelSerializer):
             "per_km_fare",
             "photos",
             "amenities",
-            "stops",
+            "journey",
         ]
 
     def create(self, validated_data):

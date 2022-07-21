@@ -429,7 +429,7 @@ class BusSearchView(APIView):
             )
         )
         buses = buses.filter(from_count__gt=0, to_count__gt=0).exclude(busunavailability_bus__date=date)
-
+        
         # journeys = models.BusJourney.objects.filter(Q(from_place__icontains=from_place) | Q(to_place__icontains=to_place))
         # bus_ids = journeys.values_list("bus", flat=True).distinct()
         # buses = models.Bus.objects.filter(id__in=bus_ids)
