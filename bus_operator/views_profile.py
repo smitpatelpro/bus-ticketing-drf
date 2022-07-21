@@ -27,14 +27,14 @@ class BusOperatorProfileView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            serializer = serializers_profile.BusOperatorProfileSerializer(
-                objs, many=False
-            )
+            many = False
         else:
             objs = models.BusOperatorProfile.objects.all()
-            serializer = serializers_profile.BusOperatorProfileSerializer(
-                objs, many=True
-            )
+            many = True
+
+        serializer = serializers_profile.BusOperatorProfileSerializer(
+            objs, many=many
+        )
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )

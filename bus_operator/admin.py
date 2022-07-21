@@ -6,6 +6,11 @@ class BusStoppageInline(admin.TabularInline):
     model = models.BusStoppage
     ordering = ["count"]
 
+# Inlines
+class BusJourneyInline(admin.TabularInline):
+    model = models.BusJourney
+    ordering = ["sequence"]
+
 
 # Model Admin
 @admin.register(models.BusOperatorProfile)
@@ -17,6 +22,7 @@ class BusOperatorProfileAdmin(admin.ModelAdmin):
 class BusAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "operator", "capacity")
     inlines = [
+        BusJourneyInline,
         BusStoppageInline,
     ]
     pass

@@ -8,8 +8,9 @@ from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
 from django.db.models import Q
 from datetime import datetime
+from django.db.models import Case, When, IntegerField, Count
 
-
+# TODO: Combine detail into list
 class BusListView(APIView):
     """
     List All Bus related to BusOperatorProfile
@@ -81,7 +82,7 @@ class BusDetailView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-
+# TODO: Try to combine list and details
 # Bus Photos Views
 class BusPhotosListView(APIView):
     """
@@ -332,7 +333,7 @@ class BusStoppageDetailView(APIView):
             status=status.HTTP_200_OK,
         )
 
-
+# TODO: Enhance Performance
 class BusSearchView(APIView):
     """
     It facilitate Searching and Sorting of Buses based on input parameters
@@ -341,9 +342,12 @@ class BusSearchView(APIView):
     permission_classes = [CustomerOnly]
 
     def get(self, request, *args, **kwargs):
+        # Mandatory
         from_place = request.GET.get("from")
         to_place = request.GET.get("to")
+        # departure_date to check availability
 
+        # Optional
         departure_start_time = request.GET.get("departure_start_time")
         departure_end_time = request.GET.get("departure_end_time")
         operator = request.GET.get("operator")
@@ -352,46 +356,65 @@ class BusSearchView(APIView):
         order_by = request.GET.getlist("order_by")
         # print("amenities:",amenities)
 
-        # stoppages = models.BusStoppage.objects.filter(Q(name__unaccent__icontains=from_place) | Q(name__unaccent__icontains=to_place)).values_list("bus", flat=True) # will works only for Postgresql
-        stoppages = models.BusStoppage.objects.filter(
-            Q(name__icontains=from_place) | Q(name__icontains=to_place)
-        )
-        # print("before filter:",stoppages )
+        # # stoppages = models.BusStoppage.objects.filter(Q(name__unaccent__icontains=from_place) | Q(name__unaccent__icontains=to_place)).values_list("bus", flat=True) # will works only for Postgresql
+        # stoppages = models.BusStoppage.objects.filter(
+        #     Q(name__icontains=from_place) | Q(name__icontains=to_place)
+        # )
+        # # print("before filter:",stoppages )
 
-        # Filter
-        format = "%H:%M:%S"
-        if departure_start_time:
-            departure_start_time = datetime.strptime(
-                departure_start_time, format
-            ).time()
-            # print("departure_start_time",departure_start_time)
-            stoppages = stoppages.exclude(
-                Q(departure_time__lt=departure_start_time)
-                & Q(name__icontains=from_place)
-            )
-        if departure_end_time:
-            departure_end_time = datetime.strptime(departure_end_time, format).time()
-            # print("departure_end_time",departure_end_time)
-            stoppages = stoppages.exclude(
-                Q(departure_time__gt=departure_end_time) & Q(name__icontains=from_place)
-            )
+        # # Filter
+        # format = "%H:%M:%S"
+        # if departure_start_time:
+        #     departure_start_time = datetime.strptime(
+        #         departure_start_time, format
+        #     ).time()
+        #     # print("departure_start_time",departure_start_time)
+        #     stoppages = stoppages.exclude(
+        #         Q(departure_time__lt=departure_start_time)
+        #         & Q(name__icontains=from_place)
+        #     )
+        # if departure_end_time:
+        #     departure_end_time = datetime.strptime(departure_end_time, format).time()
+        #     # print("departure_end_time",departure_end_time)
+        #     stoppages = stoppages.exclude(
+        #         Q(departure_time__gt=departure_end_time) & Q(name__icontains=from_place)
+        #     )
 
-        # print("after filter:",stoppages )
-        bus_ids = stoppages.values_list("bus", flat=True).distinct()
-        # print(bus_ids)
-        bus_list = []
-        for bus_id in bus_ids:
-            from_stop = stoppages.filter(name__icontains=from_place, bus=bus_id).first()
-            to_stop = stoppages.filter(name__icontains=to_place, bus=bus_id).last()
-            if from_stop and to_stop and from_stop.count < to_stop.count:
-                bus_list.append(bus_id)
 
-            # from_stop = stoppages.filter(name__icontains=from_place, bus=bus_id, journey_type="DOWN").first()
-            # to_stop = stoppages.filter(name__icontains=to_place, bus=bus_id, journey_type="DOWN").last()
-            # if from_stop and to_stop and from_stop.count > to_stop.count:
-            #    bus_list.append(bus_id)
+        # # print("after filter:",stoppages )
+        # bus_ids = stoppages.values_list("bus", flat=True).distinct()
+        # # print(bus_ids)
+        # bus_list = []
 
-        buses = models.Bus.objects.filter(id__in=bus_list)
+        # # TODO: Make distance as absolute and optimize performance by removing looping over queryset
+        # for bus_id in bus_ids:
+        #     from_stop = stoppages.filter(name__icontains=from_place, bus=bus_id).first()
+        #     to_stop = stoppages.filter(name__icontains=to_place, bus=bus_id).last()
+        #     if from_stop and to_stop and from_stop.count < to_stop.count:
+        #         bus_list.append(bus_id)
+
+        #     # from_stop = stoppages.filter(name__icontains=from_place, bus=bus_id, journey_type="DOWN").first()
+        #     # to_stop = stoppages.filter(name__icontains=to_place, bus=bus_id, journey_type="DOWN").last()
+        #     # if from_stop and to_stop and from_stop.count > to_stop.count:
+        #     #    bus_list.append(bus_id)
+
+        # buses = models.Bus.objects.filter(id__in=bus_list)
+
+
+        # buses = models.Bus.objects.prefetch_related("busstoppage_bus").filter(busstoppage_bus__name__icontains=from_place).filter(busstoppage_bus__name__icontains=to_place).distinct()
+        
+        # buses = models.Bus.objects.prefetch_related("busjourney_bus").filter(busjourney_bus__from_place__icontains=from_place, busjourney_bus__to_place__icontains=to_place).distinct()
+        # buses = models.Bus.objects.prefetch_related("busjourney_bus").filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) ).distinct()
+        # buses = models.Bus.objects.prefetch_related("busjourney_bus").filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) ).distinct()
+        
+        buses = models.Bus.objects.prefetch_related("busjourney_bus")
+        buses = buses.annotate(from_count=Count(Case(When(busjourney_bus__from_place__icontains=from_place, then=1),output_field=IntegerField(),)))
+        buses = buses.annotate(to_count=Count(Case(When(busjourney_bus__to_place__icontains=to_place, then=1),output_field=IntegerField(),)))
+        buses = buses.filter(from_count__gt=0, to_count__gt=0)
+
+        # journeys = models.BusJourney.objects.filter(Q(from_place__icontains=from_place) | Q(to_place__icontains=to_place))
+        # bus_ids = journeys.values_list("bus", flat=True).distinct()
+        # buses = models.Bus.objects.filter(id__in=bus_ids)
         # Filters
         if operator:
             buses = buses.filter(operator=operator)

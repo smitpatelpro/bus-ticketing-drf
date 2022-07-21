@@ -46,6 +46,7 @@ class AdminOnly(permissions.BasePermission):
         return False
 
 
+# TODO: Normalize permissions and break into separate class
 class AdminGetPatchOnlyOperatorPostOnly(permissions.BasePermission):
     SAFE_METHODS = ["HEAD", "OPTIONS"]  # GET is not safe method here
 

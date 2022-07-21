@@ -114,6 +114,44 @@ class BusStoppage(BaseModel):
             )
 
 
+class BusJourney(BaseModel):
+    JOURNEY_TYPES = (
+        ("UP", "UP"),
+        ("DOWN", "DOWN"),
+    )
+    bus = models.ForeignKey(
+        "Bus", on_delete=models.CASCADE, related_name="busjourney_bus"
+    )
+    sequence = models.IntegerField(validators=[MinValueValidator(1)])
+    from_place = models.CharField(max_length=255)
+    to_place = models.CharField(max_length=255)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    distance  = models.IntegerField(
+        default=0, validators=[MinValueValidator(0), MaxValueValidator(2000)]
+    )  # Its distance from last stop
+    journey_type = models.CharField(choices=JOURNEY_TYPES, max_length=20)
+
+    class Meta:
+        # verbose_name = "Bus Stop"
+        # verbose_name_plural = "Bus Stops"
+        unique_together = (
+            "bus",
+            "sequence",
+            "from_place",
+            "to_place",
+        )
+        ordering = ["sequence"]
+
+    def clean(self) -> None:
+        if self.start_time > self.end_time:
+            raise ValidationError(
+                {
+                    "start_time": "Start time must be less then arrival time."
+                }
+            )
+
+
 class Ticket(BaseModel):
     PAYMENT_STATUS = (
         ("REGULAR", "REGULAR"),
