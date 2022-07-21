@@ -9,31 +9,74 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bus_operator', '0015_ticket'),
+        ("bus_operator", "0015_ticket"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='BusJourney',
+            name="BusJourney",
             fields=[
-                ('deleted_at', models.DateTimeField(blank=True, db_index=True, default=None, editable=False, null=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('sequence', models.IntegerField(validators=[django.core.validators.MinValueValidator(1)])),
-                ('from_place', models.CharField(max_length=255)),
-                ('to_place', models.CharField(max_length=255)),
-                ('departure_time', models.TimeField()),
-                ('arrival_time', models.TimeField()),
-                ('distance', models.IntegerField(default=0, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(2000)])),
-                ('journey_type', models.CharField(choices=[('UP', 'UP'), ('DOWN', 'DOWN')], max_length=20)),
-                ('bus', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='busjourney_bus', to='bus_operator.bus')),
+                (
+                    "deleted_at",
+                    models.DateTimeField(
+                        blank=True,
+                        db_index=True,
+                        default=None,
+                        editable=False,
+                        null=True,
+                    ),
+                ),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "sequence",
+                    models.IntegerField(
+                        validators=[django.core.validators.MinValueValidator(1)]
+                    ),
+                ),
+                ("from_place", models.CharField(max_length=255)),
+                ("to_place", models.CharField(max_length=255)),
+                ("departure_time", models.TimeField()),
+                ("arrival_time", models.TimeField()),
+                (
+                    "distance",
+                    models.IntegerField(
+                        default=0,
+                        validators=[
+                            django.core.validators.MinValueValidator(0),
+                            django.core.validators.MaxValueValidator(2000),
+                        ],
+                    ),
+                ),
+                (
+                    "journey_type",
+                    models.CharField(
+                        choices=[("UP", "UP"), ("DOWN", "DOWN")], max_length=20
+                    ),
+                ),
+                (
+                    "bus",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="busjourney_bus",
+                        to="bus_operator.bus",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Bus Stop',
-                'verbose_name_plural': 'Bus Stops',
-                'ordering': ['sequence'],
-                'unique_together': {('bus', 'sequence', 'from_place', 'to_place')},
+                "verbose_name": "Bus Stop",
+                "verbose_name_plural": "Bus Stops",
+                "ordering": ["sequence"],
+                "unique_together": {("bus", "sequence", "from_place", "to_place")},
             },
         ),
     ]

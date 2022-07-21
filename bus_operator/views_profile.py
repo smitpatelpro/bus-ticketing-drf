@@ -32,9 +32,7 @@ class BusOperatorProfileView(APIView):
             objs = models.BusOperatorProfile.objects.all()
             many = True
 
-        serializer = serializers_profile.BusOperatorProfileSerializer(
-            objs, many=many
-        )
+        serializer = serializers_profile.BusOperatorProfileSerializer(objs, many=many)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )

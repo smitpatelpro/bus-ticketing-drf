@@ -127,7 +127,7 @@ class BusJourney(BaseModel):
     to_place = models.CharField(max_length=255)
     start_time = models.TimeField()
     end_time = models.TimeField()
-    distance  = models.IntegerField(
+    distance = models.IntegerField(
         default=0, validators=[MinValueValidator(0), MaxValueValidator(2000)]
     )  # Its distance from last stop
     journey_type = models.CharField(choices=JOURNEY_TYPES, max_length=20)
@@ -146,9 +146,7 @@ class BusJourney(BaseModel):
     def clean(self) -> None:
         if self.start_time > self.end_time:
             raise ValidationError(
-                {
-                    "start_time": "Start time must be less then arrival time."
-                }
+                {"start_time": "Start time must be less then arrival time."}
             )
 
 

@@ -6,6 +6,7 @@ class BusStoppageInline(admin.TabularInline):
     model = models.BusStoppage
     ordering = ["count"]
 
+
 # Inlines
 class BusJourneyInline(admin.TabularInline):
     model = models.BusJourney

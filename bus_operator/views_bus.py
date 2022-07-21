@@ -82,6 +82,7 @@ class BusDetailView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+
 # TODO: Try to combine list and details
 # Bus Photos Views
 class BusPhotosListView(APIView):
@@ -333,6 +334,7 @@ class BusStoppageDetailView(APIView):
             status=status.HTTP_200_OK,
         )
 
+
 # TODO: Enhance Performance
 class BusSearchView(APIView):
     """
@@ -380,7 +382,6 @@ class BusSearchView(APIView):
         #         Q(departure_time__gt=departure_end_time) & Q(name__icontains=from_place)
         #     )
 
-
         # # print("after filter:",stoppages )
         # bus_ids = stoppages.values_list("bus", flat=True).distinct()
         # # print(bus_ids)
@@ -400,16 +401,29 @@ class BusSearchView(APIView):
 
         # buses = models.Bus.objects.filter(id__in=bus_list)
 
-
         # buses = models.Bus.objects.prefetch_related("busstoppage_bus").filter(busstoppage_bus__name__icontains=from_place).filter(busstoppage_bus__name__icontains=to_place).distinct()
-        
+
         # buses = models.Bus.objects.prefetch_related("busjourney_bus").filter(busjourney_bus__from_place__icontains=from_place, busjourney_bus__to_place__icontains=to_place).distinct()
         # buses = models.Bus.objects.prefetch_related("busjourney_bus").filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) ).distinct()
         # buses = models.Bus.objects.prefetch_related("busjourney_bus").filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) ).distinct()
-        
+
         buses = models.Bus.objects.prefetch_related("busjourney_bus")
-        buses = buses.annotate(from_count=Count(Case(When(busjourney_bus__from_place__icontains=from_place, then=1),output_field=IntegerField(),)))
-        buses = buses.annotate(to_count=Count(Case(When(busjourney_bus__to_place__icontains=to_place, then=1),output_field=IntegerField(),)))
+        buses = buses.annotate(
+            from_count=Count(
+                Case(
+                    When(busjourney_bus__from_place__icontains=from_place, then=1),
+                    output_field=IntegerField(),
+                )
+            )
+        )
+        buses = buses.annotate(
+            to_count=Count(
+                Case(
+                    When(busjourney_bus__to_place__icontains=to_place, then=1),
+                    output_field=IntegerField(),
+                )
+            )
+        )
         buses = buses.filter(from_count__gt=0, to_count__gt=0)
 
         # journeys = models.BusJourney.objects.filter(Q(from_place__icontains=from_place) | Q(to_place__icontains=to_place))
