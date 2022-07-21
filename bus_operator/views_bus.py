@@ -347,7 +347,11 @@ class BusSearchView(APIView):
         # Mandatory
         from_place = request.GET.get("from")
         to_place = request.GET.get("to")
-        # departure_date to check availability
+        date = request.GET.get("date")
+
+        date_format = "%d-%m-%Y"
+        date = datetime.strptime(date, date_format).date()
+        # print("date:",date)
 
         # Optional
         departure_start_time = request.GET.get("departure_start_time")
@@ -424,7 +428,7 @@ class BusSearchView(APIView):
                 )
             )
         )
-        buses = buses.filter(from_count__gt=0, to_count__gt=0)
+        buses = buses.filter(from_count__gt=0, to_count__gt=0).exclude(busunavailability_bus__date=date)
 
         # journeys = models.BusJourney.objects.filter(Q(from_place__icontains=from_place) | Q(to_place__icontains=to_place))
         # bus_ids = journeys.values_list("bus", flat=True).distinct()
