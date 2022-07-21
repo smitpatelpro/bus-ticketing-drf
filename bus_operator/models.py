@@ -162,12 +162,15 @@ class Ticket(BaseModel):
     )
     bus = models.ForeignKey("Bus", on_delete=models.CASCADE, related_name="ticket_bus")
     journey_date = models.DateField()
-    start_bus_stop = models.ForeignKey(
-        "BusStoppage", on_delete=models.CASCADE, related_name="ticket_start_bus_stop"
-    )
-    end_bus_stop = models.ForeignKey(
-        "BusStoppage", on_delete=models.CASCADE, related_name="ticket_end_bus_stop"
-    )
+    # start_bus_stop = models.ForeignKey(
+    #     "BusStoppage", on_delete=models.CASCADE, related_name="ticket_start_bus_stop"
+    # )
+    # end_bus_stop = models.ForeignKey(
+    #     "BusStoppage", on_delete=models.CASCADE, related_name="ticket_end_bus_stop"
+    # )
+    
+    # journey_start
+    # journey_end
     number = models.CharField(max_length=255)
     invoice_number = models.CharField(max_length=255)
     transaction_id = models.CharField(max_length=255)
