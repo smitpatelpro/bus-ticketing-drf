@@ -72,6 +72,8 @@ class Bus(BaseModel):
         return distance * self.per_km_fare
     
     def get_available_capacity(self, start, end):
+        start = start.capitalize()
+        end = end.capitalize()
         start = self.busjourney_bus.filter(from_place=start).first()
         end = self.busjourney_bus.filter(to_place=end).first()
         if not start or not end:
@@ -83,9 +85,10 @@ class Bus(BaseModel):
         print("previous_places:",previous_places)
         print("next_places:",next_places)
         # dist = self.busjourney_bus.filter(sequence__gte=start.sequence, sequence__lte=end.sequence)
-        seats = Ticket.objects.exclude(journey_start__in=next_places).exclude(journey_end__in=previous_places)
+        seats = Ticket.objects.filter(bus=self, payment_status="SUCCESSFUL").exclude(journey_start__in=next_places).exclude(journey_end__in=previous_places)
+        print(seats.values("journey_start", "journey_end"))
         seats = seats.aggregate(total_booked_seats=Sum("seats"))
-        return int(seats["total_booked_seats"])
+        return self.capacity - int(seats["total_booked_seats"]) if seats["total_booked_seats"] else None
 
 
 class BusAmenity(BaseModel):

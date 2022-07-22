@@ -138,6 +138,8 @@ class TicketSerializer(serializers.ModelSerializer):
         Check that the journey_start and journey_end are valid bus journey stops
         """
         bus = data["bus"]
+        data["journey_start"] = data["journey_start"].capitalize()
+        data["journey_end"] = data["journey_end"].capitalize()
         distance = bus.get_distance(data["journey_start"], data["journey_end"])
         if not distance:
             raise serializers.ValidationError("journey_start and journey_end are not part of bus journey. please correct them.")
@@ -150,7 +152,6 @@ class TicketSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         bus = validated_data.get("bus")
         distance = validated_data.pop("distance")
-
         # calculate amount
         amount = bus.calculate_amount(distance)
         validated_data["amount"] = amount
