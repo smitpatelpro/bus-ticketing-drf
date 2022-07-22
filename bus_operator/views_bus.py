@@ -329,9 +329,11 @@ class BusStoppageView(APIView):
             )
 
 
-# class BusStoppageDetailView(APIView):
+
+# # BusJourney Views
+# class BusJourneyView(APIView):
 #     """
-#     Get Details of specific bus
+#     List View for BusJourney
 #     """
 
 #     permission_classes = [BusOperatorOnly]
@@ -344,18 +346,25 @@ class BusStoppageView(APIView):
 #                 {"success": False, "message": "Bus does not exists"},
 #                 status=status.HTTP_404_NOT_FOUND,
 #             )
-#         stop = bus.busstoppage_bus.filter(id=stop_uuid).last()
-#         if not stop:
-#             return Response(
-#                 {"success": False, "message": "Bus Stop does not exists"},
-#                 status=status.HTTP_404_NOT_FOUND,
-#             )
-#         serializer = serializers_bus.BusStoppageSerializer(stop)
+        
+#         if stop_uuid:
+#             stoppages = bus.busjourney_bus.filter(id=stop_uuid).last()
+#             if not stoppages:
+#                 return Response(
+#                     {"success": False, "message": "Bus Stop does not exists"},
+#                     status=status.HTTP_404_NOT_FOUND,
+#                 )
+#             many = False
+#         else:
+#             stoppages = bus.busjourney_bus.all()
+#             many = True
+#         serializer = serializers_bus.BusStoppageSerializer(stoppages, many=many)
 #         return Response(
-#             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+#             {"success": True, "data": serializer.data},
+#             status=status.HTTP_200_OK,
 #         )
 
-#     def patch(self, request, uuid, stop_uuid=None, *args, **kwargs):
+#     def post(self, request, uuid, stop_uuid=None, *args, **kwargs):
 #         profile = request.user.busoperatorprofile_user
 #         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
 #         if not bus:
@@ -363,44 +372,79 @@ class BusStoppageView(APIView):
 #                 {"success": False, "message": "Bus does not exists"},
 #                 status=status.HTTP_404_NOT_FOUND,
 #             )
-#         stop = bus.busstoppage_bus.filter(id=stop_uuid).last()
-#         if not stop:
-#             return Response(
-#                 {"success": False, "message": "Bus Stop does not exists"},
-#                 status=status.HTTP_404_NOT_FOUND,
-#             )
-#         serializer = serializers_bus.BusStoppageSerializer(
-#             stop, data=request.data, partial=True
-#         )
+#         request.data["bus"] = bus.id  # Take and overwrite Bus id from URL parameter
+#         serializer = serializers_bus.BusStoppageSerializer(data=request.data)
 #         if serializer.is_valid():
-#             serializer.save()
+#             stoppage = serializer.save()
 #             return Response(
-#                 {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+#                 {"success": True, "data": serializer.data},
+#                 status=status.HTTP_201_CREATED,
 #             )
 #         return Response(
 #             {"success": False, "errors": serializer.errors},
 #             status=status.HTTP_400_BAD_REQUEST,
 #         )
+    
+#     # views with stop id
+#     def patch(self, request, uuid, stop_uuid=None, *args, **kwargs):
+#         if stop_uuid:
+#             profile = request.user.busoperatorprofile_user
+#             bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
+#             if not bus:
+#                 return Response(
+#                     {"success": False, "message": "Bus does not exists"},
+#                     status=status.HTTP_404_NOT_FOUND,
+#                 )
+#             stop = bus.busstoppage_bus.filter(id=stop_uuid).last()
+#             if not stop:
+#                 return Response(
+#                     {"success": False, "message": "Bus Stop does not exists"},
+#                     status=status.HTTP_404_NOT_FOUND,
+#                 )
+#             serializer = serializers_bus.BusStoppageSerializer(
+#                 stop, data=request.data, partial=True
+#             )
+#             if serializer.is_valid():
+#                 serializer.save()
+#                 return Response(
+#                     {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+#                 )
+#             return Response(
+#                 {"success": False, "errors": serializer.errors},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+#         else:
+#             return Response(
+#                 {"success": False, "message": "PATCH is not permitted on this collection"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
 
 #     def delete(self, request, uuid, stop_uuid=None, *args, **kwargs):
-#         profile = request.user.busoperatorprofile_user
-#         bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
-#         if not bus:
+#         if stop_uuid:
+#             profile = request.user.busoperatorprofile_user
+#             bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
+#             if not bus:
+#                 return Response(
+#                     {"success": False, "message": "Bus does not exists"},
+#                     status=status.HTTP_404_NOT_FOUND,
+#                 )
+#             stop = bus.busstoppage_bus.filter(id=stop_uuid).last()
+#             if not stop:
+#                 return Response(
+#                     {"success": False, "message": "Bus Stop does not exists"},
+#                     status=status.HTTP_404_NOT_FOUND,
+#                 )
+#             stop.delete()
 #             return Response(
-#                 {"success": False, "message": "Bus does not exists"},
-#                 status=status.HTTP_404_NOT_FOUND,
+#                 {"success": True},
+#                 status=status.HTTP_200_OK,
 #             )
-#         stop = bus.busstoppage_bus.filter(id=stop_uuid).last()
-#         if not stop:
+#         else:
 #             return Response(
-#                 {"success": False, "message": "Bus Stop does not exists"},
-#                 status=status.HTTP_404_NOT_FOUND,
+#                 {"success": False, "message": "DELETE is not permitted on this collection"},
+#                 status=status.HTTP_400_BAD_REQUEST,
 #             )
-#         stop.delete()
-#         return Response(
-#             {"success": True},
-#             status=status.HTTP_200_OK,
-#         )
+
 
 
 # TODO: Enhance Performance
@@ -409,7 +453,7 @@ class BusSearchView(APIView):
     It facilitate Searching and Sorting of Buses based on input parameters
     """
 
-    permission_classes = [CustomerOnly]
+    # permission_classes = [CustomerOnly]
 
     def get(self, request, *args, **kwargs):
         # Mandatory
@@ -479,7 +523,28 @@ class BusSearchView(APIView):
         # buses = models.Bus.objects.prefetch_related("busjourney_bus").filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) ).distinct()
         # buses = models.Bus.objects.prefetch_related("busjourney_bus").filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) ).distinct()
 
-        buses = models.Bus.objects.prefetch_related("busjourney_bus")
+        # buses = models.Bus.objects.prefetch_related("busjourney_bus")
+
+        # or p in Person.objects.raw('SELECT * FROM myapp_person'):
+        '''
+        TODO:
+        Run Raw Query 
+        SELECT s1.*, s2.* FROM bus_operator_busstoppage as s1 INNER JOIN bus_operator_busstoppage as s2 ON s1.bus_id = s2.bus_id 
+        WHERE lower(s1.name) = "ahmedabad" and lower(s2.name)="jaipur"
+        and s1.distance_from_last_stop < s2.distance_from_last_stop; 
+        '''
+        query = """SELECT s1.*, s2.* FROM bus_operator_busstoppage as s1 INNER JOIN bus_operator_busstoppage as s2 ON s1.bus_id = s2.bus_id 
+        WHERE lower(s1.name) = %s and lower(s2.name)=%s
+        and s1.distance_from_last_stop < s2.distance_from_last_stop"""
+        
+        # buses = models.Bus.objects.raw(query, [from_place, to_place])
+
+        # print(buses.values("id"))
+        # for bus in buses:
+            # if bus.id in 
+        # # TODO: Validate Performance
+        buses = models.Bus.objects.filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) )
+        # buses = models.Bus.objects.all()
         buses = buses.annotate(
             from_count=Count(
                 Case(
@@ -496,6 +561,8 @@ class BusSearchView(APIView):
                 )
             )
         )
+
+        # # if date in buses.busunavailability_bus.date:
         buses = buses.filter(from_count__gt=0, to_count__gt=0).exclude(busunavailability_bus__date=date)
 
         # journeys = models.BusJourney.objects.filter(Q(from_place__icontains=from_place) | Q(to_place__icontains=to_place))

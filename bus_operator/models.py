@@ -4,6 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db.models import Sum
 
 User = get_user_model()
 
@@ -58,6 +59,33 @@ class Bus(BaseModel):
     )
     photos = models.ManyToManyField("common.Media", blank=True)
     amenities = models.ManyToManyField("BusAmenity", blank=True)
+
+    def get_distance(self, start, end):
+        start = self.busjourney_bus.filter(from_place=start).first()
+        end = self.busjourney_bus.filter(to_place=end).first()
+        if not start or not end:
+            return False
+        dist = self.busjourney_bus.filter(sequence__gte=start.sequence, sequence__lte=end.sequence).values("distance").aggregate(total_distance=Sum("distance"))
+        return int(dist['total_distance'])
+    
+    def calculate_amount(self, distance):
+        return distance * self.per_km_fare
+    
+    def get_available_capacity(self, start, end):
+        start = self.busjourney_bus.filter(from_place=start).first()
+        end = self.busjourney_bus.filter(to_place=end).first()
+        if not start or not end:
+            return False
+        print("start seq: ",start.sequence)
+        print("end seq: ",end.sequence)
+        previous_places = self.busjourney_bus.filter(sequence__lt=start.sequence).values_list("from_place", flat=True)
+        next_places = self.busjourney_bus.filter(sequence__gt=end.sequence).values_list("from_place", flat=True)
+        print("previous_places:",previous_places)
+        print("next_places:",next_places)
+        # dist = self.busjourney_bus.filter(sequence__gte=start.sequence, sequence__lte=end.sequence)
+        seats = Ticket.objects.exclude(journey_start__in=next_places).exclude(journey_end__in=previous_places)
+        seats = seats.aggregate(total_booked_seats=Sum("seats"))
+        return int(seats["total_booked_seats"])
 
 
 class BusAmenity(BaseModel):
@@ -150,9 +178,9 @@ class BusJourney(BaseModel):
 
 class Ticket(BaseModel):
     PAYMENT_STATUS = (
-        ("REGULAR", "REGULAR"),
-        ("SLEEPER", "SLEEPER"),
-        ("SLEEPER_DUPLEX", "SLEEPER_DUPLEX"),
+        ("PENDING", "PENDING"),
+        ("SUCCESSFUL", "SUCCESSFUL"),
+        ("FAILED", "FAILED"),
     )
 
     customer = models.ForeignKey(
@@ -169,15 +197,19 @@ class Ticket(BaseModel):
     #     "BusStoppage", on_delete=models.CASCADE, related_name="ticket_end_bus_stop"
     # )
     
-    # journey_start
-    # journey_end
+    journey_start = models.CharField(max_length=255)
+    journey_end = models.CharField(max_length=255)
     number = models.CharField(max_length=255)
-    invoice_number = models.CharField(max_length=255)
-    transaction_id = models.CharField(max_length=255)
-    rating = models.IntegerField(
+    seats = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    invoice_number = models.CharField(max_length=255, blank=True)
+    transaction_id = models.CharField(max_length=255, blank=True)
+    rating = models.IntegerField(blank=True, null=True,
         validators=[MinValueValidator(0), MaxValueValidator(10)]
     )
     payment_status = models.CharField(choices=PAYMENT_STATUS, max_length=20)
+    payment_link = models.URLField(blank=True)
     amount = models.DecimalField(
         max_digits=6, decimal_places=2, validators=[MinValueValidator(0)]
     )

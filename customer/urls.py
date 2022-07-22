@@ -9,4 +9,6 @@ urlpatterns = [
     path(v1_base + "customers/profile/media", views.ProfileMediaView.as_view()),
     path(v1_base + "customers", views.CustomerProfileView.as_view()),
     path(v1_base + "customers/<uuid>", views.CustomerProfileView.as_view()),
+    path(v1_base + "tickets", views.TicketView.as_view()),
+    path(v1_base + "tickets/<uuid>", views.TicketView.as_view()),
 ]

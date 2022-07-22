@@ -104,3 +104,57 @@ class BusSerializer(serializers.ModelSerializer):
         profile = self.context.get("profile")
         instance = models.Bus.objects.create(operator=profile, **validated_data)
         return instance
+
+
+class TicketSerializer(serializers.ModelSerializer):
+    payment_status = serializers.CharField(read_only=True)
+    payment_link = serializers.CharField(read_only=True)
+    rating = serializers.CharField(read_only=True)
+    amount = serializers.CharField(read_only=True)
+    transaction_id = serializers.CharField(read_only=True)
+    invoice_number = serializers.CharField(read_only=True)
+    class Meta:
+        model = models.Ticket
+
+        fields = [
+            "id",
+            "number",
+            "customer",
+            "bus",
+            "journey_date",
+            "journey_start",
+            "journey_end",
+            "seats",
+            "invoice_number",
+            "transaction_id",
+            "rating",
+            "payment_status",
+            "payment_link",
+            "amount",
+        ]
+    
+    def validate(self, data):
+        """
+        Check that the journey_start and journey_end are valid bus journey stops
+        """
+        bus = data["bus"]
+        distance = bus.get_distance(data["journey_start"], data["journey_end"])
+        if not distance:
+            raise serializers.ValidationError("journey_start and journey_end are not part of bus journey. please correct them.")
+        data["distance"] = distance
+        # print("dist:", distance)
+        # if data['start_date'] > data['end_date']:
+        #     raise serializers.ValidationError({"end_date": "finish must occur after start"})
+        return data
+    
+    def create(self, validated_data):
+        bus = validated_data.get("bus")
+        distance = validated_data.pop("distance")
+
+        # calculate amount
+        amount = bus.calculate_amount(distance)
+        validated_data["amount"] = amount
+
+        instance = models.Ticket.objects.create(**validated_data)
+        return instance
+
