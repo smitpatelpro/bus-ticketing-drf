@@ -8,6 +8,7 @@ from common.serializers import MediaSerializer
 from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
 from bus_operator import serializers_bus, models as models_operator
+from django.utils import timezone
 
 class CustomerProfileView(APIView):
     """
@@ -215,3 +216,39 @@ class TicketView(APIView):
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
+    
+    def patch(self, request, uuid=None, *args, **kwargs):
+        now = timezone.now()
+        profile = request.user.customerprofile_user
+        if uuid:
+            ticket = models_operator.Ticket.objects.filter(customer=profile, id=uuid).first()
+            if not ticket:
+                return Response(
+                    {"success": False, "message": "ticket does not exists"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            if ticket.journey_date >= now.date():
+                return Response(
+                    {"success": False, "message": "review can be only post after journey_date"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            rating = request.data.get("rating")
+            print("rating: ",rating)
+            if rating and 0 <= rating and rating <= 10:
+                ticket.rating = rating
+                ticket.save(update_fields=["rating"])
+            else:
+                return Response(
+                    {"success": False, "message": "invalid rating value. please include rating parameter with integer value in range 0 to 10"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            return Response(
+                {"success": True},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {"success": False, "message": "PATCH is not permitted on collection"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )

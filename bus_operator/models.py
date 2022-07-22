@@ -74,8 +74,8 @@ class Bus(BaseModel):
     def get_available_capacity(self, start, end):
         start = start.capitalize()
         end = end.capitalize()
+        end = self.busjourney_bus.filter(to_place=end).last()
         start = self.busjourney_bus.filter(from_place=start).first()
-        end = self.busjourney_bus.filter(to_place=end).first()
         if not start or not end:
             return False
         print("start seq: ",start.sequence)
