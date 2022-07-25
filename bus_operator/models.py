@@ -1,3 +1,4 @@
+from zoneinfo import available_timezones
 from django.db import models
 from common.models import BaseModel
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -60,7 +61,7 @@ class Bus(BaseModel):
     photos = models.ManyToManyField("common.Media", blank=True)
     amenities = models.ManyToManyField("BusAmenity", blank=True)
 
-    def get_distance(self, start, end):
+    def get_distance_journey(self, start, end):
         start = self.busjourney_bus.filter(from_place=start).first()
         end = self.busjourney_bus.filter(to_place=end).first()
         if not start or not end:
@@ -68,34 +69,57 @@ class Bus(BaseModel):
         dist = self.busjourney_bus.filter(sequence__gte=start.sequence, sequence__lte=end.sequence).values("distance").aggregate(total_distance=Sum("distance"))
         return int(dist['total_distance'])
     
+    def get_distance_stops(self, start, end) -> int:
+        if start >= end:
+            return False
+        dist = self.busstoppage_bus.filter(count__gte=start, count__lte=end).values("distance_from_last_stop").aggregate(total_distance=Sum("distance_from_last_stop"))
+        total_distance = int(dist['total_distance'])
+        print("total_distance=",total_distance)
+        return total_distance
+    
     def calculate_amount(self, distance):
         return distance * self.per_km_fare
     
-    def get_available_capacity_journey(self, start, end):
-        start = start.capitalize()
-        end = end.capitalize()
-        end = self.busjourney_bus.filter(to_place=end).last()
-        start = self.busjourney_bus.filter(from_place=start).first()
-        if not start or not end:
-            return False
-        print("start seq: ",start.sequence)
-        print("end seq: ",end.sequence)
-        previous_places = self.busjourney_bus.filter(sequence__lt=start.sequence).values_list("from_place", flat=True)
-        next_places = self.busjourney_bus.filter(sequence__gt=end.sequence).values_list("from_place", flat=True)
-        print("previous_places:",previous_places)
-        print("next_places:",next_places)
-        # dist = self.busjourney_bus.filter(sequence__gte=start.sequence, sequence__lte=end.sequence)
-        seats = Ticket.objects.filter(bus=self, payment_status="SUCCESSFUL").exclude(journey_start__in=next_places).exclude(journey_end__in=previous_places)
-        print(seats.values("journey_start", "journey_end"))
-        seats = seats.aggregate(total_booked_seats=Sum("seats"))
-        return self.capacity - int(seats["total_booked_seats"]) if seats["total_booked_seats"] else None
+    # def get_available_capacity_journey(self, start, end):
+    #     start = start.capitalize()
+    #     end = end.capitalize()
+    #     end = self.busjourney_bus.filter(to_place=end).last()
+    #     start = self.busjourney_bus.filter(from_place=start).first()
+    #     if not start or not end:
+    #         return False
+    #     print("start seq: ",start.sequence)
+    #     print("end seq: ",end.sequence)
+    #     previous_places = self.busjourney_bus.filter(sequence__lt=start.sequence).values_list("from_place", flat=True)
+    #     next_places = self.busjourney_bus.filter(sequence__gt=end.sequence).values_list("from_place", flat=True)
+    #     print("previous_places:",previous_places)
+    #     print("next_places:",next_places)
+    #     # dist = self.busjourney_bus.filter(sequence__gte=start.sequence, sequence__lte=end.sequence)
+    #     seats = Ticket.objects.filter(bus=self, payment_status="SUCCESSFUL").exclude(journey_start__in=next_places).exclude(journey_end__in=previous_places)
+    #     print(seats.values("journey_start", "journey_end"))
+    #     seats = seats.aggregate(total_booked_seats=Sum("seats"))
+    #     return self.capacity - int(seats["total_booked_seats"]) if seats["total_booked_seats"] else None
 
+    # start=count of start bus stop, end=count of end bus stop
     def get_available_capacity_stops(self, start, end):
-        start = start.capitalize()
-        end = end.capitalize()
-        end = self.busjourney_bus.filter(to_place=end).last()
-        start = self.busjourney_bus.filter(from_place=start).first()
-        return
+        tickets = Ticket.objects.filter(bus=self, payment_status="SUCCESSFUL").exclude(start_bus_stop__count__gte=end).exclude(end_bus_stop__count__lte=start)
+        if not tickets.exists():
+            return self.capacity
+        print("tickets=",tickets)
+        booked_seats = tickets.aggregate(total_booked_seats=Sum("seats"))
+        print("booked_seats=",booked_seats)
+        if "total_booked_seats" not in booked_seats and type(booked_seats["total_booked_seats"]) == int:
+            return None
+        booked_seats = int(booked_seats["total_booked_seats"])
+        available_seats = self.capacity - booked_seats
+        return available_seats
+    
+    def is_seat_available(self, start, end, seats):
+        available_seats = self.get_available_capacity_stops(start, end)
+        if available_seats-seats >= 0:
+            return (True, available_seats)
+        else:
+            return (False, available_seats)
+
 
 class BusAmenity(BaseModel):
     name = models.CharField(max_length=255, unique=True)
@@ -149,6 +173,8 @@ class BusStoppage(BaseModel):
                     "departure_time": "Departure time must be greater or equal to arrival time."
                 }
             )
+    def __str__(self) -> str:
+        return "{} ({})".format(self.name, self.id)
 
 
 class BusJourney(BaseModel):
@@ -199,15 +225,16 @@ class Ticket(BaseModel):
     )
     bus = models.ForeignKey("Bus", on_delete=models.CASCADE, related_name="ticket_bus")
     journey_date = models.DateField()
-    # start_bus_stop = models.ForeignKey(
-    #     "BusStoppage", on_delete=models.CASCADE, related_name="ticket_start_bus_stop"
-    # )
-    # end_bus_stop = models.ForeignKey(
-    #     "BusStoppage", on_delete=models.CASCADE, related_name="ticket_end_bus_stop"
-    # )
+    start_bus_stop = models.ForeignKey(
+        "BusStoppage", on_delete=models.CASCADE, related_name="ticket_start_bus_stop"
+    )
+    end_bus_stop = models.ForeignKey(
+        "BusStoppage", on_delete=models.CASCADE, related_name="ticket_end_bus_stop"
+    )
     
-    journey_start = models.CharField(max_length=255)
-    journey_end = models.CharField(max_length=255)
+    # journey_start = models.CharField(max_length=255) # Only for Journey model
+    # journey_end = models.CharField(max_length=255)   # Only for Journey model
+    
     number = models.CharField(max_length=255)
     seats = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]

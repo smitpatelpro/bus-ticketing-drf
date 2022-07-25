@@ -84,7 +84,8 @@ class BusSerializer(serializers.ModelSerializer):
     photos = MediaSerializer(many=True, read_only=True)
     amenities = BusAmenitySerializer(many=True, read_only=True)
     operator = serializers.CharField(required=False)
-    journey = BusJourneySerializer(source="busjourney_bus", many=True, read_only=True)
+    # journey = BusJourneySerializer(source="busjourney_bus", many=True, read_only=True)
+    stops = BusStoppageSerializer(source="busstoppage_bus", many=True, read_only=True)
 
     class Meta:
         model = models.Bus
@@ -97,7 +98,8 @@ class BusSerializer(serializers.ModelSerializer):
             "per_km_fare",
             "photos",
             "amenities",
-            "journey",
+            # "journey",
+            "stops",
         ]
 
     def create(self, validated_data):
@@ -113,6 +115,8 @@ class TicketSerializer(serializers.ModelSerializer):
     amount = serializers.CharField(read_only=True)
     transaction_id = serializers.CharField(read_only=True)
     invoice_number = serializers.CharField(read_only=True)
+    start_bus_stop_details = BusStoppageSerializer(read_only=True, source="start_bus_stop")
+    end_bus_stop_details = BusStoppageSerializer(read_only=True, source="end_bus_stop")
     class Meta:
         model = models.Ticket
 
@@ -122,8 +126,12 @@ class TicketSerializer(serializers.ModelSerializer):
             "customer",
             "bus",
             "journey_date",
-            "journey_start",
-            "journey_end",
+            "start_bus_stop",
+            "end_bus_stop",
+            "start_bus_stop_details",
+            "end_bus_stop_details",
+            # "journey_start",
+            # "journey_end",
             "seats",
             "invoice_number",
             "transaction_id",
@@ -134,19 +142,42 @@ class TicketSerializer(serializers.ModelSerializer):
         ]
     
     def validate(self, data):
-        """
-        Check that the journey_start and journey_end are valid bus journey stops
-        """
         bus = data["bus"]
-        data["journey_start"] = data["journey_start"].capitalize()
-        data["journey_end"] = data["journey_end"].capitalize()
-        distance = bus.get_distance(data["journey_start"], data["journey_end"])
-        if not distance:
-            raise serializers.ValidationError("journey_start and journey_end are not part of bus journey. please correct them.")
+        start_bus_stop = data.get("start_bus_stop")
+        end_bus_stop = data.get("end_bus_stop")
+        seats = data.get("seats")
+
+        if not bus.busstoppage_bus.filter(id=start_bus_stop.id).exists():
+            raise serializers.ValidationError({"start_bus_stop":"Start bus stop must belong to bus."})
+
+        if not bus.busstoppage_bus.filter(id=end_bus_stop.id).exists():
+            raise serializers.ValidationError({"end_bus_stop":"End bus stop must belong to bus."})
+
+        if end_bus_stop.count <= start_bus_stop.count:
+            raise serializers.ValidationError("Start bus stop must come before end bus stop. please correct them.")
+        
+        is_available, available_count =  bus.is_seat_available(start_bus_stop.count, end_bus_stop.count, seats)
+        print("is_available",is_available)
+        print("available_count",available_count)
+        if(not is_available):
+            raise serializers.ValidationError("Requested seats are not available for given route. available seats are {}".format(available_count))
+
+        # =========================
+        # For Journey model
+        # =========================
+        # """
+        # Check that the journey_start and journey_end are valid bus journey stops
+        # """
+        # data["journey_start"] = data["journey_start"].capitalize()
+        # data["journey_end"] = data["journey_end"].capitalize()
+        # distance = bus.get_distance_journey(data["journey_start"], data["journey_end"])
+        # if not distance:
+        #     raise serializers.ValidationError("journey_start and journey_end are not part of bus journey. please correct them.")
+        # =========================
+
+        # For Stoppage Model
+        distance = bus.get_distance_stops(start_bus_stop.count, end_bus_stop.count)
         data["distance"] = distance
-        # print("dist:", distance)
-        # if data['start_date'] > data['end_date']:
-        #     raise serializers.ValidationError({"end_date": "finish must occur after start"})
         return data
     
     def create(self, validated_data):
