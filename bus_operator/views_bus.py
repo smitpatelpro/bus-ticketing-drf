@@ -463,7 +463,6 @@ class BusSearchView(APIView):
 
         date_format = "%d-%m-%Y"
         date = datetime.strptime(date, date_format).date()
-        # print("date:",date)
 
         # Optional
         departure_start_time = request.GET.get("departure_start_time")
@@ -474,30 +473,84 @@ class BusSearchView(APIView):
         order_by = request.GET.getlist("order_by")
         # print("amenities:",amenities)
 
-        # buses = models.Bus.objects.filter(busstoppage_bus__name__icontains=from_place).filter(busstoppage_bus__name__icontains=to_place)
-        # buses = models.Bus.objects.filter(busstoppage_bus__name__icontains=from_place).filter(busstoppage_bus__name__icontains=to_place)
-
-
-        # 
         buses = models.Bus.objects.prefetch_related("busjourney_bus").filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) ).distinct()
 
         frm = Q(name__icontains=from_place)
         to = Q(name__icontains=to_place)
-        # print("before from")
         from_stoppages = models.BusStoppage.objects.filter(frm)
         to_stoppages = models.BusStoppage.objects.filter(to)
-        # print("from_stoppages",from_stoppages)
         buses = buses.annotate(
             from_dist = Subquery(from_stoppages.filter(bus=OuterRef("id")).values("count")) 
         ).annotate(
             to_dist = Subquery(to_stoppages.filter(bus=OuterRef("id")).values("count"))
         ).filter(from_dist__isnull=False, to_dist__isnull=False).filter(from_dist__lt=F("to_dist") )
 
+        # print("buses=", buses.values("id", "from_dist", "to_dist"))   
+        
+        # Filters
+        if operator:
+            buses = buses.filter(operator=operator)
+        if type:
+            buses = buses.filter(type__in=type)
+        if order_by:
+            try:
+                # TODO: validate if this has security holes
+                buses = buses.order_by(order_by[0])
+            except:
+                return Response(
+                    {"success": False, "message": "Invalid order_by values"},
+                    status=status.HTTP_200_OK,
+                )
+        if amenities:
+            buses = buses.filter(amenities__in=amenities)
+
+        serializer = serializers_bus.BusSerializer(buses, many=True)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+
+# Operator Ticket Views
+class TicketView(APIView):
+    """
+    Details View for Specific Ticket objects
+    """
+
+    permission_classes = [BusOperatorProfileRequired]
+
+    def get(self, request, *args, **kwargs):
+        bus = request.GET.get("bus")
+        customer = request.GET.get("customer")
+        journey_date = request.GET.get("journey_date")
+        date_format = "%d-%m-%Y"
+        # journey_date = datetime.strptime(journey_date, date_format).date()
+
+        profile = request.user.busoperatorprofile_user
+        tickets = models_operator.Ticket.objects.filter(bus__operator=profile)
+        
+        if bus:
+            tickets = tickets.filter(bus=bus)
+        if customer:
+            tickets = tickets.filter(customer=customer)
+        if journey_date:
+            tickets = tickets.filter(journey_date=journey_date)
+
+        serializer = serializers_bus.TicketSerializer(tickets, many=True)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+
+'''
+# Reference Code for previous search implementation Experiments
+
+        # buses = models.Bus.objects.filter(busstoppage_bus__name__icontains=from_place).filter(busstoppage_bus__name__icontains=to_place)
+        # buses = models.Bus.objects.filter(busstoppage_bus__name__icontains=from_place).filter(busstoppage_bus__name__icontains=to_place)
+
 
 
         # .annotate(d = F("busstoppage_bus__count") - F("busstoppage_bus__count") )
 
-        print("buses=", buses.values("id", "from_dist", "to_dist"))        
         # fm = stoppages.filter(count=OuterRef('count'),
         # ).exclude(count__lte=OuterRef('count'))
 
@@ -559,13 +612,13 @@ class BusSearchView(APIView):
         # buses = models.Bus.objects.prefetch_related("busjourney_bus")
 
         # or p in Person.objects.raw('SELECT * FROM myapp_person'):
-        '''
+        """
         TODO:
         Run Raw Query 
         SELECT s1.*, s2.* FROM bus_operator_busstoppage as s1 INNER JOIN bus_operator_busstoppage as s2 ON s1.bus_id = s2.bus_id 
         WHERE lower(s1.name) = "ahmedabad" and lower(s2.name)="jaipur"
         and s1.distance_from_last_stop < s2.distance_from_last_stop; 
-        '''
+        """
         query = """SELECT s1.*, s2.* FROM bus_operator_busstoppage as s1 INNER JOIN bus_operator_busstoppage as s2 ON s1.bus_id = s2.bus_id 
         WHERE lower(s1.name) = %s and lower(s2.name)=%s
         and s1.distance_from_last_stop < s2.distance_from_last_stop"""
@@ -601,56 +654,5 @@ class BusSearchView(APIView):
         # journeys = models.BusJourney.objects.filter(Q(from_place__icontains=from_place) | Q(to_place__icontains=to_place))
         # bus_ids = journeys.values_list("bus", flat=True).distinct()
         # buses = models.Bus.objects.filter(id__in=bus_ids)
-        # Filters
-        if operator:
-            buses = buses.filter(operator=operator)
-        if type:
-            buses = buses.filter(type__in=type)
-        if order_by:
-            try:
-                # TODO: validate if this has security holes
-                buses = buses.order_by(order_by[0])
-            except:
-                return Response(
-                    {"success": False, "message": "Invalid order_by values"},
-                    status=status.HTTP_200_OK,
-                )
-        if amenities:
-            buses = buses.filter(amenities__in=amenities)
 
-        serializer = serializers_bus.BusSerializer(buses, many=True)
-        return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
-
-
-# Operator Ticket Views
-class TicketView(APIView):
-    """
-    Details View for Specific Ticket objects
-    """
-
-    permission_classes = [BusOperatorProfileRequired]
-
-    def get(self, request, *args, **kwargs):
-        bus = request.GET.get("bus")
-        customer = request.GET.get("customer")
-        journey_date = request.GET.get("journey_date")
-        date_format = "%d-%m-%Y"
-        # journey_date = datetime.strptime(journey_date, date_format).date()
-
-        profile = request.user.busoperatorprofile_user
-        tickets = models_operator.Ticket.objects.filter(bus__operator=profile)
-        
-        if bus:
-            tickets = tickets.filter(bus=bus)
-        if customer:
-            tickets = tickets.filter(customer=customer)
-        if journey_date:
-            tickets = tickets.filter(journey_date=journey_date)
-
-        serializer = serializers_bus.TicketSerializer(tickets, many=True)
-        return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
-
+'''
