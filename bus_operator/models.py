@@ -71,7 +71,7 @@ class Bus(BaseModel):
     def calculate_amount(self, distance):
         return distance * self.per_km_fare
     
-    def get_available_capacity(self, start, end):
+    def get_available_capacity_journey(self, start, end):
         start = start.capitalize()
         end = end.capitalize()
         end = self.busjourney_bus.filter(to_place=end).last()
@@ -90,6 +90,12 @@ class Bus(BaseModel):
         seats = seats.aggregate(total_booked_seats=Sum("seats"))
         return self.capacity - int(seats["total_booked_seats"]) if seats["total_booked_seats"] else None
 
+    def get_available_capacity_stops(self, start, end):
+        start = start.capitalize()
+        end = end.capitalize()
+        end = self.busjourney_bus.filter(to_place=end).last()
+        start = self.busjourney_bus.filter(from_place=start).first()
+        return
 
 class BusAmenity(BaseModel):
     name = models.CharField(max_length=255, unique=True)

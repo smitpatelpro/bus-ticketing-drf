@@ -176,23 +176,24 @@ class ProfileMediaView(APIView):
 
 # Customer Ticket Views
 class TicketView(APIView):
-    """
-    Details View for Specific CustomerProfile objects
-    it is responsible to perform operation on single object
-    """
 
     permission_classes = [CustomerOnly]
 
     def get(self, request, uuid=None, *args, **kwargs):
         if uuid:
+            profile = request.user.customerprofile_user
+            tickets = models_operator.Ticket.objects.filter(customer=profile, id=uuid).first()
+            many = False
             pass
         else:
             profile = request.user.customerprofile_user
             tickets = models_operator.Ticket.objects.filter(customer=profile)
-            serializer = serializers_bus.TicketSerializer(tickets, many=True)
-            return Response(
-                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-            )
+            many = True
+        
+        serializer = serializers_bus.TicketSerializer(tickets, many=many)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     def post(self, request, uuid=None, *args, **kwargs):
         request.data["customer"] = str(request.user.customerprofile_user.id)

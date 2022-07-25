@@ -46,4 +46,7 @@ urlpatterns += [
         v1_base + "buses/<uuid>/stops/<stop_uuid>",
         views_bus.BusStoppageView.as_view(),
     ),
+    # Ticket Bookings
+    path(v1_base + "bookings/tickets", views_bus.TicketView.as_view()),
+
 ]

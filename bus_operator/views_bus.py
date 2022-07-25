@@ -6,9 +6,9 @@ from . import models, serializers_bus
 from common.serializers import MediaSerializer
 from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
-from django.db.models import Q
+from django.db.models import Q, F
 from datetime import datetime
-from django.db.models import Case, When, IntegerField, Count
+from django.db.models import Case, When, IntegerField, Count, OuterRef, Subquery
 
 
 class BusView(APIView):
@@ -474,11 +474,43 @@ class BusSearchView(APIView):
         order_by = request.GET.getlist("order_by")
         # print("amenities:",amenities)
 
-        # # stoppages = models.BusStoppage.objects.filter(Q(name__unaccent__icontains=from_place) | Q(name__unaccent__icontains=to_place)).values_list("bus", flat=True) # will works only for Postgresql
+        # buses = models.Bus.objects.filter(busstoppage_bus__name__icontains=from_place).filter(busstoppage_bus__name__icontains=to_place)
+        # buses = models.Bus.objects.filter(busstoppage_bus__name__icontains=from_place).filter(busstoppage_bus__name__icontains=to_place)
+
+
+        # 
+        buses = models.Bus.objects.prefetch_related("busjourney_bus").filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) ).distinct()
+
+        frm = Q(name__icontains=from_place)
+        to = Q(name__icontains=to_place)
+        # print("before from")
+        from_stoppages = models.BusStoppage.objects.filter(frm)
+        to_stoppages = models.BusStoppage.objects.filter(to)
+        # print("from_stoppages",from_stoppages)
+        buses = buses.annotate(
+            from_dist = Subquery(from_stoppages.filter(bus=OuterRef("id")).values("count")) 
+        ).annotate(
+            to_dist = Subquery(to_stoppages.filter(bus=OuterRef("id")).values("count"))
+        ).filter(from_dist__isnull=False, to_dist__isnull=False).filter(from_dist__lt=F("to_dist") )
+
+
+
+        # .annotate(d = F("busstoppage_bus__count") - F("busstoppage_bus__count") )
+
+        print("buses=", buses.values("id", "from_dist", "to_dist"))        
+        # fm = stoppages.filter(count=OuterRef('count'),
+        # ).exclude(count__lte=OuterRef('count'))
+
+        # stoppages = stoppages.annotate(rank=Subquery(F()))
+
+        # print("before filter:",stoppages.values("bus", "count") )
+        # print("before filter:",stoppages.values("bus") )
+
+        ## stoppages = models.BusStoppage.objects.filter(Q(name__unaccent__icontains=from_place) | Q(name__unaccent__icontains=to_place)).values_list("bus", flat=True) # will works only for Postgresql
         # stoppages = models.BusStoppage.objects.filter(
         #     Q(name__icontains=from_place) | Q(name__icontains=to_place)
         # )
-        # # print("before filter:",stoppages )
+        ## print("before filter:",stoppages )
 
         # # Filter
         # format = "%H:%M:%S"
@@ -516,6 +548,7 @@ class BusSearchView(APIView):
         #     #    bus_list.append(bus_id)
 
         # buses = models.Bus.objects.filter(id__in=bus_list)
+        # buses = models.Bus.objects.filter(id__in=bus_ids)
 
         # buses = models.Bus.objects.prefetch_related("busstoppage_bus").filter(busstoppage_bus__name__icontains=from_place).filter(busstoppage_bus__name__icontains=to_place).distinct()
 
@@ -543,27 +576,27 @@ class BusSearchView(APIView):
         # for bus in buses:
             # if bus.id in 
         # # TODO: Validate Performance
-        buses = models.Bus.objects.filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) )
-        # buses = models.Bus.objects.all()
-        buses = buses.annotate(
-            from_count=Count(
-                Case(
-                    When(busjourney_bus__from_place__icontains=from_place, then=1),
-                    output_field=IntegerField(),
-                )
-            )
-        )
-        buses = buses.annotate(
-            to_count=Count(
-                Case(
-                    When(busjourney_bus__to_place__icontains=to_place, then=1),
-                    output_field=IntegerField(),
-                )
-            )
-        )
+        # buses = models.Bus.objects.filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) )
+        # # buses = models.Bus.objects.all()
+        # buses = buses.annotate(
+        #     from_count=Count(
+        #         Case(
+        #             When(busjourney_bus__from_place__icontains=from_place, then=1),
+        #             output_field=IntegerField(),
+        #         )
+        #     )
+        # )
+        # buses = buses.annotate(
+        #     to_count=Count(
+        #         Case(
+        #             When(busjourney_bus__to_place__icontains=to_place, then=1),
+        #             output_field=IntegerField(),
+        #         )
+        #     )
+        # )
 
         # # if date in buses.busunavailability_bus.date:
-        buses = buses.filter(from_count__gt=0, to_count__gt=0).exclude(busunavailability_bus__date=date)
+        # buses = buses.filter(from_count__gt=0, to_count__gt=0).exclude(busunavailability_bus__date=date)
 
         # journeys = models.BusJourney.objects.filter(Q(from_place__icontains=from_place) | Q(to_place__icontains=to_place))
         # bus_ids = journeys.values_list("bus", flat=True).distinct()
@@ -586,6 +619,37 @@ class BusSearchView(APIView):
             buses = buses.filter(amenities__in=amenities)
 
         serializer = serializers_bus.BusSerializer(buses, many=True)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+
+# Operator Ticket Views
+class TicketView(APIView):
+    """
+    Details View for Specific Ticket objects
+    """
+
+    permission_classes = [BusOperatorProfileRequired]
+
+    def get(self, request, *args, **kwargs):
+        bus = request.GET.get("bus")
+        customer = request.GET.get("customer")
+        journey_date = request.GET.get("journey_date")
+        date_format = "%d-%m-%Y"
+        # journey_date = datetime.strptime(journey_date, date_format).date()
+
+        profile = request.user.busoperatorprofile_user
+        tickets = models_operator.Ticket.objects.filter(bus__operator=profile)
+        
+        if bus:
+            tickets = tickets.filter(bus=bus)
+        if customer:
+            tickets = tickets.filter(customer=customer)
+        if journey_date:
+            tickets = tickets.filter(journey_date=journey_date)
+
+        serializer = serializers_bus.TicketSerializer(tickets, many=True)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
