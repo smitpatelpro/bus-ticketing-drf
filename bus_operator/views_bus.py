@@ -473,7 +473,8 @@ class BusSearchView(APIView):
         order_by = request.GET.getlist("order_by")
         # print("amenities:",amenities)
 
-        buses = models.Bus.objects.prefetch_related("busjourney_bus").filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) ).distinct()
+        buses = models.Bus.objects.filter(operator__approval_status="APPROVED")
+        buses = buses.prefetch_related("busjourney_bus").filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) ).distinct()
 
         frm = Q(name__icontains=from_place)
         to = Q(name__icontains=to_place)
