@@ -5,3 +5,6 @@ pre-commit==2.20.0
 black==22.6.0
 django-softdelete==0.9.4
 django-debug-toolbar==3.5.0
+pytest-django==4.5.2
+pytest-factoryboy==2.5.0
+Faker==13.15.1
