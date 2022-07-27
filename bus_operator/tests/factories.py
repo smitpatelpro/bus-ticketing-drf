@@ -3,8 +3,10 @@ from django.contrib.auth import get_user_model
 import uuid
 User = get_user_model()
 
-class UserFactory(factory.django.DjangoModelFactory):
+class BaseFactory(factory.django.DjangoModelFactory):
     id = factory.faker.Faker('uuid4')
+
+class UserFactory(BaseFactory):
     full_name = factory.faker.Faker('name')
     role = "CUSTOMER"
     email = factory.Sequence(lambda n: 'person{}@example.com'.format(n))
@@ -13,8 +15,7 @@ class UserFactory(factory.django.DjangoModelFactory):
         model = User
         django_get_or_create = ('email',)
 
-class BusOperatorProfileFactory(factory.django.DjangoModelFactory):
-    id = factory.faker.Faker('uuid4')
+class BusOperatorProfileFactory(BaseFactory):
     user = factory.SubFactory('bus_operator.tests.factories.UserFactory')
     business_name = factory.faker.Faker('name')
     approval_status = "PENDING_APPROVAL"
@@ -69,10 +70,16 @@ class BusOperatorProfileFactory(factory.django.DjangoModelFactory):
 #     class Meta:
 #         model = "bus_operator.BusOperatorProfile"
 
-class BusFactory(factory.django.DjangoModelFactory):
+class BusFactory(BaseFactory):
     name = factory.faker.Faker('name')
     operator = factory.SubFactory('bus_operator.tests.factories.BusOperatorProfileFactory')
 
     class Meta:
         model = "bus_operator.Bus"
+
+class BusStopFactory(BaseFactory):
+    bus = factory.SubFactory('bus_operator.tests.factories.BusFactory')
+
+    class Meta:
+        model = "bus_operator.BusStoppage"
 
