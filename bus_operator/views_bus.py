@@ -497,12 +497,14 @@ class BusSearchView(APIView):
         buses = (
             buses.annotate(
                 from_dist=Subquery(
-                    from_stoppages.filter(bus=OuterRef("id")).values("count")
+                    # from_stoppages.filter(bus=OuterRef("id")).values("count")
+                    from_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop")
                 )
             )
             .annotate(
                 to_dist=Subquery(
-                    to_stoppages.filter(bus=OuterRef("id")).values("count")
+                    # to_stoppages.filter(bus=OuterRef("id")).values("count")
+                    to_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop")
                 )
             )
             .filter(from_dist__isnull=False, to_dist__isnull=False)
