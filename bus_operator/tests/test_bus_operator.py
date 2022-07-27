@@ -164,46 +164,29 @@ class TestBus:
             arrival_time="11:00:00",
             departure_time="11:15:00",
         )
-        print(bus_stop1)
-        print(bus_stop2)
-        print(bus_stop3)
-        print(bus_stop4)
-        print(bus_stop5)
-        print(bus_stop6)
 
+        # Forward Journey Search
         search_params = {
             "date": "22-07-2022",
-            "from": "jaipur",
-            "to": "ahmedabad",
+            "from": "Ahmedabad",
+            "to": "Jaipur",
         }
         response = api_client.get(buses_search_endpoint, data=search_params)
         assert response.status_code == 200
         print(response.json())
+        data = response.json()["data"]
+        assert len(data) == 1
+        assert data[0]["id"] == bus.id
 
-        # bus_stop_data = {
-        #     "count": 1,
-        #     "name": "Ahmedabad",
-        #     "arrival_time": "12:00:06",
-        #     "departure_time": "12:50:06",
-        #     "distance": 0,
-        #     "journey_type": "UP"
-        # }
-        # response = api_client.post(bus_stops_endpoint.format(bus_json["id"]), data=bus_stop_data, format='json')
-        # assert response.status_code == 201
-        # stop1_json = response.json()["data"]
-        # print("stop1: ", stop1_json)
-
-        # bus_stop_data = {
-        #     "count": 2,
-        #     "name": "Ahmedabad",
-        #     "arrival_time": "12:00:06",
-        #     "departure_time": "12:50:06",
-        #     "distance": 0,
-        #     "journey_type": "UP"
-        # }
-        # response = api_client.post(bus_stops_endpoint.format(bus_json["id"]), data=bus_stop_data, format='json')
-        # assert response.status_code == 201
-        # stop2_json = response.json()["data"]
-        # print("stop2: ", stop2_json)
-
-        assert False
+        # Reverse Journey Search
+        search_params = {
+            "date": "22-07-2022",
+            "from": "Jaipur",
+            "to": "Ahmedabad",
+        }
+        response = api_client.get(buses_search_endpoint, data=search_params)
+        assert response.status_code == 200
+        print(response.json())
+        data = response.json()["data"]
+        assert len(data) == 1
+        assert data[0]["id"] == bus.id

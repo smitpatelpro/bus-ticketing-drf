@@ -509,7 +509,7 @@ class BusSearchView(APIView):
             .filter(from_dist__lt=F("to_dist"))
         )
 
-        # print("buses=", buses.values("id", "from_dist", "to_dist"))
+        print("buses=", buses.values("id", "from_dist", "to_dist"))
 
         # Filters
         if operator:
