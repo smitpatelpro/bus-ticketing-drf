@@ -73,13 +73,17 @@ class BusOperatorProfileFactory(BaseFactory):
 class BusFactory(BaseFactory):
     name = factory.faker.Faker('name')
     operator = factory.SubFactory('bus_operator.tests.factories.BusOperatorProfileFactory')
+    per_km_fare = 7
+    capacity = 30
+    type = "REGULAR"
 
     class Meta:
         model = "bus_operator.Bus"
 
 class BusStopFactory(BaseFactory):
     bus = factory.SubFactory('bus_operator.tests.factories.BusFactory')
-
+    distance_from_last_stop = 100
+    journey_type = "UP"
     class Meta:
         model = "bus_operator.BusStoppage"
 

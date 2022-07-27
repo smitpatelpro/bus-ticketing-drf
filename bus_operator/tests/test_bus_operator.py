@@ -3,13 +3,16 @@ from rest_framework.test import APIClient
 from rest_framework.test import force_authenticate
 from .factories import *
 from rest_framework_simplejwt.tokens import RefreshToken
+from datetime import datetime, timedelta
 
-profile_endpoint = '/api/v1/bus_operators/profile'
-operators_endpoint = '/api/v1/bus_operators'
-operator_details_endpoint = '/api/v1/bus_operators/{}'
-buses_endpoint = '/api/v1/buses'
-bus_stops_endpoint = '/api/v1/buses/{}/stops'
-bus_stops_details_endpoint = '/api/v1/buses/{}/stops/{}'
+base_url = "/api/v1/"
+profile_endpoint = base_url + 'bus_operators/profile'
+operators_endpoint = base_url + 'bus_operators'
+operator_details_endpoint = base_url + 'bus_operators/{}'
+buses_endpoint = base_url + 'buses'
+buses_search_endpoint = base_url + 'buses/search'
+bus_stops_endpoint = base_url + 'buses/{}/stops'
+bus_stops_details_endpoint = base_url + 'buses/{}/stops/{}'
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -87,48 +90,75 @@ class TestBus:
     
     @pytest.mark.django_db
     def test_bus_availability(self, api_client):
-        bus_data = {
-            "name": "Ahmedabad-Kerala-Express",
-            "type": "REGULAR",
-            "capacity": 80,
-            "per_km_fare": "7.00"
-        }
-        # Create Bus using Approved Operator
+        # bus_data = {
+        #     "name": "Ahmedabad-Kerala-Express",
+        #     "type": "REGULAR",
+        #     "capacity": 80,
+        #     "per_km_fare": "7.00"
+        # }
+        # # Create Bus using Approved Operator
+        # user_approved = UserFactory.create(role="BUS_OPERATOR")
+        # approved_operator = BusOperatorProfileFactory.create(user=user_approved, approval_status="APPROVED")
+        # api_client.force_authenticate(user=user_approved)
+        # response = api_client.post(buses_endpoint, data=bus_data, format='json')
+        # assert response.status_code == 201
+        # bus_json = response.json()["data"]
+        # print("bus: ", bus_json)
+
         user_approved = UserFactory.create(role="BUS_OPERATOR")
         approved_operator = BusOperatorProfileFactory.create(user=user_approved, approval_status="APPROVED")
         api_client.force_authenticate(user=user_approved)
-        response = api_client.post(buses_endpoint, data=bus_data, format='json')
-        assert response.status_code == 201
-        bus_json = response.json()["data"]
-        print("bus: ", bus_json)
-        
-        bus_stop_data = {
-            "count": 1,
-            "name": "Ahmedabad",
-            "arrival_time": "12:00:06",
-            "departure_time": "12:50:06",
-            "distance": 0,
-            "journey_type": "UP"
-        }
-        response = api_client.post(bus_stops_endpoint.format(bus_json["id"]), data=bus_stop_data, format='json')
-        assert response.status_code == 201
-        stop1_json = response.json()["data"]
-        print("stop1: ", stop1_json)
 
-        bus_stop_data = {
-            "count": 2,
-            "name": "Ahmedabad",
-            "arrival_time": "12:00:06",
-            "departure_time": "12:50:06",
-            "distance": 0,
-            "journey_type": "UP"
-        }
-        response = api_client.post(bus_stops_endpoint.format(bus_json["id"]), data=bus_stop_data, format='json')
-        assert response.status_code == 201
-        stop2_json = response.json()["data"]
-        print("stop2: ", stop2_json)
+        bus = BusFactory(operator=approved_operator, name="Ahmedabad-Kerala-Express")
+        bus_stop1 = BusStopFactory.create(bus=bus, name="Ahmedabad", count=1, distance_from_last_stop=0, arrival_time="09:00:00", departure_time="09:15:00")
+        bus_stop2 = BusStopFactory.create(bus=bus, name="Jaipur", count=2,distance_from_last_stop=50, arrival_time="10:00:00", departure_time="10:15:00")
+        bus_stop3 = BusStopFactory.create(bus=bus, name="Delhi", count=3, distance_from_last_stop=100, arrival_time="11:00:00", departure_time="11:15:00")
+        bus_stop4 = BusStopFactory.create(bus=bus, name="Delhi", count=4, distance_from_last_stop=0, arrival_time="11:00:00", departure_time="11:15:00")
+        bus_stop5 = BusStopFactory.create(bus=bus, name="Jaipur", count=5, distance_from_last_stop=50, arrival_time="11:00:00", departure_time="11:15:00")
+        bus_stop6 = BusStopFactory.create(bus=bus, name="Ahmedabad", count=6, distance_from_last_stop=100, arrival_time="11:00:00", departure_time="11:15:00")
+        print(bus_stop1)
+        print(bus_stop2)
+        print(bus_stop3)
+        print(bus_stop4)
+        print(bus_stop5)
+        print(bus_stop6)
 
-        # assert False
+        search_params = {
+            "date":"22-07-2022",
+            "from":"jaipur",
+            "to":"ahmedabad",
+        }
+        response = api_client.get(buses_search_endpoint, data=search_params)
+        assert response.status_code == 200
+        print(response.json())
+
+        # bus_stop_data = {
+        #     "count": 1,
+        #     "name": "Ahmedabad",
+        #     "arrival_time": "12:00:06",
+        #     "departure_time": "12:50:06",
+        #     "distance": 0,
+        #     "journey_type": "UP"
+        # }
+        # response = api_client.post(bus_stops_endpoint.format(bus_json["id"]), data=bus_stop_data, format='json')
+        # assert response.status_code == 201
+        # stop1_json = response.json()["data"]
+        # print("stop1: ", stop1_json)
+
+        # bus_stop_data = {
+        #     "count": 2,
+        #     "name": "Ahmedabad",
+        #     "arrival_time": "12:00:06",
+        #     "departure_time": "12:50:06",
+        #     "distance": 0,
+        #     "journey_type": "UP"
+        # }
+        # response = api_client.post(bus_stops_endpoint.format(bus_json["id"]), data=bus_stop_data, format='json')
+        # assert response.status_code == 201
+        # stop2_json = response.json()["data"]
+        # print("stop2: ", stop2_json)
+
+        assert False
 
 
 

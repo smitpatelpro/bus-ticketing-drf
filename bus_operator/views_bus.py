@@ -476,10 +476,8 @@ class BusSearchView(APIView):
         type = request.GET.getlist("type")
         amenities = request.GET.getlist("amenities")
         order_by = request.GET.getlist("order_by")
-        # print("amenities:",amenities)
 
         buses = models.Bus.objects.filter(operator__approval_status="APPROVED")
-        buses = buses.prefetch_related("busjourney_bus").filter(Q(busjourney_bus__from_place__icontains=from_place) | Q(busjourney_bus__to_place__icontains=to_place) ).distinct()
 
         frm = Q(name__icontains=from_place)
         to = Q(name__icontains=to_place)
@@ -500,7 +498,7 @@ class BusSearchView(APIView):
             buses = buses.filter(type__in=type)
         if order_by:
             try:
-                # TODO: validate if this has security holes
+                # TODO: validate if this has no security vulnerabilities
                 buses = buses.order_by(order_by[0])
             except:
                 return Response(
