@@ -16,7 +16,7 @@ class BusView(APIView):
     List All Bus related to BusOperatorProfile
     """
 
-    permission_classes = [BusOperatorOnly]
+    permission_classes = [ApprovedBusOperatorProfileRequired]
 
     def get(self, request, uuid=None, *args, **kwargs):
         profile = request.user.busoperatorprofile_user
@@ -38,6 +38,11 @@ class BusView(APIView):
 
     def post(self, request, *args, **kwargs):
         profile = request.user.busoperatorprofile_user
+        # if profile.approval_status != "APPROVED":
+        #     return Response(
+        #         {"success": False, "message": "only approved profiles can add buses."},
+        #         status=status.HTTP_401_UNAUTHORIZED,
+        #     )
         serializer = serializers_bus.BusSerializer(
             data=request.data, context={"profile": profile}
         )
@@ -152,7 +157,7 @@ class BusAmenitiesView(APIView):
     List View for BusAmenities
     """
 
-    permission_classes = [BusOperatorOnly]
+    permission_classes = [ApprovedBusOperatorProfileRequired]
 
     def get(self, request, uuid, amenity_uuid=None, *args, **kwargs):
         profile = request.user.busoperatorprofile_user
@@ -219,7 +224,7 @@ class BusStoppageView(APIView):
     List View for BusStoppage
     """
 
-    permission_classes = [BusOperatorOnly]
+    permission_classes = [ApprovedBusOperatorProfileRequired]
 
     def get(self, request, uuid, stop_uuid=None, *args, **kwargs):
         profile = request.user.busoperatorprofile_user

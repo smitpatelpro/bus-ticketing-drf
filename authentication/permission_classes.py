@@ -95,6 +95,17 @@ class BusOperatorProfileRequired(permissions.BasePermission):
 
         return False
 
+# New Atomic Permission Classes
+class ApprovedBusOperatorProfileRequired(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated or request.user.role != "BUS_OPERATOR":
+            return False
+
+        if (hasattr(request.user, "busoperatorprofile_user") and (request.user.busoperatorprofile_user is not None) and request.user.busoperatorprofile_user.deleted_at is None and request.user.busoperatorprofile_user.approval_status == "APPROVED"):
+            return True
+        
+        return False
+
 class AdminOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated or request.user.role != "ADMIN":

@@ -14,16 +14,22 @@ class UserFactory(factory.django.DjangoModelFactory):
 
 
 class BusOperatorProfileFactory(factory.django.DjangoModelFactory):
-    user = factory.SubFactory('bus_operator.factories.UserFactory')
+    user = factory.SubFactory('bus_operator.tests.factories.UserFactory')
     business_name = "asdasdasd"
     approval_status = "PENDING_APPROVAL"
 
     class Meta:
         model = "bus_operator.BusOperatorProfile"
 
+class BusFactory(factory.django.DjangoModelFactory):
+    operator = factory.SubFactory('bus_operator.tests.factories.BusOperatorProfileFactory')
+
+    class Meta:
+        model = "bus_operator.Bus"
+
 
 from pytest_factoryboy import register
-from .factories import BusOperatorProfileFactory, UserFactory
+# from .factories import BusOperatorProfileFactory, UserFactory
 
 register(UserFactory, "operator_user", role="BUS_OPERATOR")
 register(UserFactory, "user",)
