@@ -55,22 +55,23 @@ class BusStoppageAdmin(admin.ModelAdmin):
 class BusUnavailabilityAdmin(admin.ModelAdmin):
     pass
 
+
 @admin.register(models.Ticket)
 class TicketAdmin(admin.ModelAdmin):
     list_display = [
-            "id",
-            "number",
-            "customer",
-            "bus",
-            "journey_date",
-            # "journey_start",
-            # "journey_end",
-            "seats",
-            "invoice_number",
-            "transaction_id",
-            "rating",
-            "payment_status",
-            "payment_link",
-            "amount",
-        ]
+        "id",
+        "number",
+        "customer",
+        "bus",
+        "journey_date",
+        # "journey_start",
+        # "journey_end",
+        "seats",
+        "invoice_number",
+        "transaction_id",
+        "rating",
+        "payment_status",
+        "payment_link",
+        "amount",
+    ]
     pass

@@ -66,20 +66,30 @@ class Bus(BaseModel):
         end = self.busjourney_bus.filter(to_place=end).first()
         if not start or not end:
             return False
-        dist = self.busjourney_bus.filter(sequence__gte=start.sequence, sequence__lte=end.sequence).values("distance").aggregate(total_distance=Sum("distance"))
-        return int(dist['total_distance'])
-    
+        dist = (
+            self.busjourney_bus.filter(
+                sequence__gte=start.sequence, sequence__lte=end.sequence
+            )
+            .values("distance")
+            .aggregate(total_distance=Sum("distance"))
+        )
+        return int(dist["total_distance"])
+
     def get_distance_stops(self, start, end) -> int:
         if start >= end:
             return False
-        dist = self.busstoppage_bus.filter(count__gte=start, count__lte=end).values("distance_from_last_stop").aggregate(total_distance=Sum("distance_from_last_stop"))
-        total_distance = int(dist['total_distance'])
-        print("total_distance=",total_distance)
+        dist = (
+            self.busstoppage_bus.filter(count__gte=start, count__lte=end)
+            .values("distance_from_last_stop")
+            .aggregate(total_distance=Sum("distance_from_last_stop"))
+        )
+        total_distance = int(dist["total_distance"])
+        print("total_distance=", total_distance)
         return total_distance
-    
+
     def calculate_amount(self, distance):
         return distance * self.per_km_fare
-    
+
     # def get_available_capacity_journey(self, start, end):
     #     start = start.capitalize()
     #     end = end.capitalize()
@@ -101,21 +111,28 @@ class Bus(BaseModel):
 
     # start=count of start bus stop, end=count of end bus stop
     def get_available_capacity_stops(self, start, end):
-        tickets = Ticket.objects.filter(bus=self, payment_status="SUCCESSFUL").exclude(start_bus_stop__count__gte=end).exclude(end_bus_stop__count__lte=start)
+        tickets = (
+            Ticket.objects.filter(bus=self, payment_status="SUCCESSFUL")
+            .exclude(start_bus_stop__count__gte=end)
+            .exclude(end_bus_stop__count__lte=start)
+        )
         if not tickets.exists():
             return self.capacity
-        print("tickets=",tickets)
+        print("tickets=", tickets)
         booked_seats = tickets.aggregate(total_booked_seats=Sum("seats"))
-        print("booked_seats=",booked_seats)
-        if "total_booked_seats" not in booked_seats and type(booked_seats["total_booked_seats"]) == int:
+        print("booked_seats=", booked_seats)
+        if (
+            "total_booked_seats" not in booked_seats
+            and type(booked_seats["total_booked_seats"]) == int
+        ):
             return None
         booked_seats = int(booked_seats["total_booked_seats"])
         available_seats = self.capacity - booked_seats
         return available_seats
-    
+
     def is_seat_available(self, start, end, seats):
         available_seats = self.get_available_capacity_stops(start, end)
-        if available_seats-seats >= 0:
+        if available_seats - seats >= 0:
             return (True, available_seats)
         else:
             return (False, available_seats)
@@ -173,6 +190,7 @@ class BusStoppage(BaseModel):
                     "departure_time": "Departure time must be greater or equal to arrival time."
                 }
             )
+
     def __str__(self) -> str:
         return "{} ({})".format(self.name, self.id)
 
@@ -231,18 +249,16 @@ class Ticket(BaseModel):
     end_bus_stop = models.ForeignKey(
         "BusStoppage", on_delete=models.CASCADE, related_name="ticket_end_bus_stop"
     )
-    
+
     # journey_start = models.CharField(max_length=255) # Only for Journey model
     # journey_end = models.CharField(max_length=255)   # Only for Journey model
-    
+
     number = models.CharField(max_length=255)
-    seats = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)]
-    )
+    seats = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     invoice_number = models.CharField(max_length=255, blank=True)
     transaction_id = models.CharField(max_length=255, blank=True)
-    rating = models.IntegerField(blank=True, null=True,
-        validators=[MinValueValidator(0), MaxValueValidator(10)]
+    rating = models.IntegerField(
+        blank=True, null=True, validators=[MinValueValidator(0), MaxValueValidator(10)]
     )
     payment_status = models.CharField(choices=PAYMENT_STATUS, max_length=20)
     payment_link = models.URLField(blank=True)

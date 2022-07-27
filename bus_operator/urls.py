@@ -48,5 +48,4 @@ urlpatterns += [
     ),
     # Ticket Bookings
     path(v1_base + "bookings/tickets", views_bus.TicketView.as_view()),
-
 ]

@@ -7,13 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bus_operator', '0022_alter_ticket_invoice_number_and_more'),
+        ("bus_operator", "0022_alter_ticket_invoice_number_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='ticket',
-            name='rating',
-            field=models.IntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(10)]),
+            model_name="ticket",
+            name="rating",
+            field=models.IntegerField(
+                blank=True,
+                null=True,
+                validators=[
+                    django.core.validators.MinValueValidator(0),
+                    django.core.validators.MaxValueValidator(10),
+                ],
+            ),
         ),
     ]

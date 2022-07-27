@@ -7,13 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bus_operator', '0019_remove_ticket_end_bus_stop_and_more'),
+        ("bus_operator", "0019_remove_ticket_end_bus_stop_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='ticket',
-            name='seats',
-            field=models.IntegerField(validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(5)]),
+            model_name="ticket",
+            name="seats",
+            field=models.IntegerField(
+                validators=[
+                    django.core.validators.MinValueValidator(1),
+                    django.core.validators.MaxValueValidator(5),
+                ]
+            ),
         ),
     ]

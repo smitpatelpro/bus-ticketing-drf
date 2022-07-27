@@ -16,7 +16,9 @@ class BusOperatorProfileView(APIView):
     """
 
     # permission_classes = [AdminGetPatchOnlyOperatorPostOnly]
-    permission_classes = [ (AdminOnly & (GetOnly | PatchOnly) ) | (BusOperatorProfileRequired & PostOnly)]
+    permission_classes = [
+        (AdminOnly & (GetOnly | PatchOnly)) | (BusOperatorProfileRequired & PostOnly)
+    ]
 
     def get(self, request, uuid=None, *args, **kwargs):
         if uuid:
@@ -120,7 +122,9 @@ class ProfileMediaView(APIView):
     Media access for Current BusOperatorProfile
     """
 
-    permission_classes = [BusOperatorProfileRequired & (GetOnly | PatchOnly | DeleteOnly)]
+    permission_classes = [
+        BusOperatorProfileRequired & (GetOnly | PatchOnly | DeleteOnly)
+    ]
 
     def get(self, request, *args, **kwargs):
         profile = request.user.busoperatorprofile_user

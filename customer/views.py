@@ -10,6 +10,7 @@ from authentication.permission_classes import *
 from bus_operator import serializers_bus, models as models_operator
 from django.utils import timezone
 
+
 class CustomerProfileView(APIView):
     """
     List View for ALL CustomerProfile objects
@@ -182,14 +183,16 @@ class TicketView(APIView):
     def get(self, request, uuid=None, *args, **kwargs):
         if uuid:
             profile = request.user.customerprofile_user
-            tickets = models_operator.Ticket.objects.filter(customer=profile, id=uuid).first()
+            tickets = models_operator.Ticket.objects.filter(
+                customer=profile, id=uuid
+            ).first()
             many = False
             pass
         else:
             profile = request.user.customerprofile_user
             tickets = models_operator.Ticket.objects.filter(customer=profile)
             many = True
-        
+
         serializer = serializers_bus.TicketSerializer(tickets, many=many)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
@@ -217,12 +220,14 @@ class TicketView(APIView):
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    
+
     def patch(self, request, uuid=None, *args, **kwargs):
         now = timezone.now()
         profile = request.user.customerprofile_user
         if uuid:
-            ticket = models_operator.Ticket.objects.filter(customer=profile, id=uuid).first()
+            ticket = models_operator.Ticket.objects.filter(
+                customer=profile, id=uuid
+            ).first()
             if not ticket:
                 return Response(
                     {"success": False, "message": "ticket does not exists"},
@@ -230,18 +235,24 @@ class TicketView(APIView):
                 )
             if ticket.journey_date >= now.date():
                 return Response(
-                    {"success": False, "message": "review can be only post after journey_date"},
+                    {
+                        "success": False,
+                        "message": "review can be only post after journey_date",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
             rating = request.data.get("rating")
-            print("rating: ",rating)
+            print("rating: ", rating)
             if rating and 0 <= rating and rating <= 10:
                 ticket.rating = rating
                 ticket.save(update_fields=["rating"])
             else:
                 return Response(
-                    {"success": False, "message": "invalid rating value. please include rating parameter with integer value in range 0 to 10"},
+                    {
+                        "success": False,
+                        "message": "invalid rating value. please include rating parameter with integer value in range 0 to 10",
+                    },
                     status=status.HTTP_404_NOT_FOUND,
                 )
             return Response(

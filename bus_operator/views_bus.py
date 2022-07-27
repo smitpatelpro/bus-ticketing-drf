@@ -56,7 +56,7 @@ class BusView(APIView):
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    
+
     def patch(self, request, uuid=None, *args, **kwargs):
         if uuid:
             profile = request.user.busoperatorprofile_user
@@ -66,11 +66,14 @@ class BusView(APIView):
                     {"success": False, "message": "Bus does not exists"},
                     status=status.HTTP_404_NOT_FOUND,
                 )
-            serializer = serializers_bus.BusSerializer(bus, data=request.data, partial=True)
+            serializer = serializers_bus.BusSerializer(
+                bus, data=request.data, partial=True
+            )
             if serializer.is_valid():
                 serializer.save()
                 return Response(
-                    {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+                    {"success": True, "data": serializer.data},
+                    status=status.HTTP_200_OK,
                 )
             return Response(
                 {"success": False, "errors": serializer.errors},
@@ -128,7 +131,7 @@ class BusPhotosView(APIView):
         )
 
     def delete(self, request, uuid, photo_uuid=None, *args, **kwargs):
-        if photo_uuid: 
+        if photo_uuid:
             profile = request.user.busoperatorprofile_user
             bus = models.Bus.objects.filter(operator=profile, id=uuid).first()
             if not bus:
@@ -213,7 +216,10 @@ class BusAmenitiesView(APIView):
             )
         else:
             return Response(
-                {"success": False, "message": "POST is not permitted on this collection"},
+                {
+                    "success": False,
+                    "message": "POST is not permitted on this collection",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -234,7 +240,7 @@ class BusStoppageView(APIView):
                 {"success": False, "message": "Bus does not exists"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        
+
         if stop_uuid:
             stoppages = bus.busstoppage_bus.filter(id=stop_uuid).last()
             if not stoppages:
@@ -272,7 +278,7 @@ class BusStoppageView(APIView):
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    
+
     # views with stop id
     def patch(self, request, uuid, stop_uuid=None, *args, **kwargs):
         if stop_uuid:
@@ -295,7 +301,8 @@ class BusStoppageView(APIView):
             if serializer.is_valid():
                 serializer.save()
                 return Response(
-                    {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+                    {"success": True, "data": serializer.data},
+                    status=status.HTTP_200_OK,
                 )
             return Response(
                 {"success": False, "errors": serializer.errors},
@@ -303,7 +310,10 @@ class BusStoppageView(APIView):
             )
         else:
             return Response(
-                {"success": False, "message": "PATCH is not permitted on this collection"},
+                {
+                    "success": False,
+                    "message": "PATCH is not permitted on this collection",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -329,10 +339,12 @@ class BusStoppageView(APIView):
             )
         else:
             return Response(
-                {"success": False, "message": "DELETE is not permitted on this collection"},
+                {
+                    "success": False,
+                    "message": "DELETE is not permitted on this collection",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
 
 
 # # BusJourney Views
@@ -351,7 +363,7 @@ class BusStoppageView(APIView):
 #                 {"success": False, "message": "Bus does not exists"},
 #                 status=status.HTTP_404_NOT_FOUND,
 #             )
-        
+
 #         if stop_uuid:
 #             stoppages = bus.busjourney_bus.filter(id=stop_uuid).last()
 #             if not stoppages:
@@ -389,7 +401,7 @@ class BusStoppageView(APIView):
 #             {"success": False, "errors": serializer.errors},
 #             status=status.HTTP_400_BAD_REQUEST,
 #         )
-    
+
 #     # views with stop id
 #     def patch(self, request, uuid, stop_uuid=None, *args, **kwargs):
 #         if stop_uuid:
@@ -451,7 +463,6 @@ class BusStoppageView(APIView):
 #             )
 
 
-
 # TODO: Enhance Performance
 class BusSearchView(APIView):
     """
@@ -483,14 +494,23 @@ class BusSearchView(APIView):
         to = Q(name__icontains=to_place)
         from_stoppages = models.BusStoppage.objects.filter(frm)
         to_stoppages = models.BusStoppage.objects.filter(to)
-        buses = buses.annotate(
-            from_dist = Subquery(from_stoppages.filter(bus=OuterRef("id")).values("count")) 
-        ).annotate(
-            to_dist = Subquery(to_stoppages.filter(bus=OuterRef("id")).values("count"))
-        ).filter(from_dist__isnull=False, to_dist__isnull=False).filter(from_dist__lt=F("to_dist") )
+        buses = (
+            buses.annotate(
+                from_dist=Subquery(
+                    from_stoppages.filter(bus=OuterRef("id")).values("count")
+                )
+            )
+            .annotate(
+                to_dist=Subquery(
+                    to_stoppages.filter(bus=OuterRef("id")).values("count")
+                )
+            )
+            .filter(from_dist__isnull=False, to_dist__isnull=False)
+            .filter(from_dist__lt=F("to_dist"))
+        )
 
-        # print("buses=", buses.values("id", "from_dist", "to_dist"))   
-        
+        # print("buses=", buses.values("id", "from_dist", "to_dist"))
+
         # Filters
         if operator:
             buses = buses.filter(operator=operator)
@@ -531,7 +551,7 @@ class TicketView(APIView):
 
         profile = request.user.busoperatorprofile_user
         tickets = models_operator.Ticket.objects.filter(bus__operator=profile)
-        
+
         if bus:
             tickets = tickets.filter(bus=bus)
         if customer:

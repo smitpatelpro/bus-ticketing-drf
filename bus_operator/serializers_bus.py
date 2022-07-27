@@ -64,6 +64,7 @@ class BusStoppageSerializer(serializers.ModelSerializer):
             "journey_type",
         ]
 
+
 class BusJourneySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.BusJourney
@@ -115,8 +116,11 @@ class TicketSerializer(serializers.ModelSerializer):
     amount = serializers.CharField(read_only=True)
     transaction_id = serializers.CharField(read_only=True)
     invoice_number = serializers.CharField(read_only=True)
-    start_bus_stop_details = BusStoppageSerializer(read_only=True, source="start_bus_stop")
+    start_bus_stop_details = BusStoppageSerializer(
+        read_only=True, source="start_bus_stop"
+    )
     end_bus_stop_details = BusStoppageSerializer(read_only=True, source="end_bus_stop")
+
     class Meta:
         model = models.Ticket
 
@@ -140,7 +144,7 @@ class TicketSerializer(serializers.ModelSerializer):
             "payment_link",
             "amount",
         ]
-    
+
     def validate(self, data):
         bus = data["bus"]
         start_bus_stop = data.get("start_bus_stop")
@@ -148,19 +152,31 @@ class TicketSerializer(serializers.ModelSerializer):
         seats = data.get("seats")
 
         if not bus.busstoppage_bus.filter(id=start_bus_stop.id).exists():
-            raise serializers.ValidationError({"start_bus_stop":"Start bus stop must belong to bus."})
+            raise serializers.ValidationError(
+                {"start_bus_stop": "Start bus stop must belong to bus."}
+            )
 
         if not bus.busstoppage_bus.filter(id=end_bus_stop.id).exists():
-            raise serializers.ValidationError({"end_bus_stop":"End bus stop must belong to bus."})
+            raise serializers.ValidationError(
+                {"end_bus_stop": "End bus stop must belong to bus."}
+            )
 
         if end_bus_stop.count <= start_bus_stop.count:
-            raise serializers.ValidationError("Start bus stop must come before end bus stop. please correct them.")
-        
-        is_available, available_count =  bus.is_seat_available(start_bus_stop.count, end_bus_stop.count, seats)
-        print("is_available",is_available)
-        print("available_count",available_count)
-        if(not is_available):
-            raise serializers.ValidationError("Requested seats are not available for given route. available seats are {}".format(available_count))
+            raise serializers.ValidationError(
+                "Start bus stop must come before end bus stop. please correct them."
+            )
+
+        is_available, available_count = bus.is_seat_available(
+            start_bus_stop.count, end_bus_stop.count, seats
+        )
+        print("is_available", is_available)
+        print("available_count", available_count)
+        if not is_available:
+            raise serializers.ValidationError(
+                "Requested seats are not available for given route. available seats are {}".format(
+                    available_count
+                )
+            )
 
         # =========================
         # For Journey model
@@ -179,7 +195,7 @@ class TicketSerializer(serializers.ModelSerializer):
         distance = bus.get_distance_stops(start_bus_stop.count, end_bus_stop.count)
         data["distance"] = distance
         return data
-    
+
     def create(self, validated_data):
         bus = validated_data.get("bus")
         distance = validated_data.pop("distance")
@@ -189,4 +205,3 @@ class TicketSerializer(serializers.ModelSerializer):
 
         instance = models.Ticket.objects.create(**validated_data)
         return instance
-

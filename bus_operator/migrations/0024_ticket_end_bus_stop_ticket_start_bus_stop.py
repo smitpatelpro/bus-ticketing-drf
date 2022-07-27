@@ -7,20 +7,30 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bus_operator', '0023_alter_ticket_rating'),
+        ("bus_operator", "0023_alter_ticket_rating"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='ticket',
-            name='end_bus_stop',
-            field=models.ForeignKey(default='bd42df8f-4ce4-49a3-bdbb-ca7cf51ed332', on_delete=django.db.models.deletion.CASCADE, related_name='ticket_end_bus_stop', to='bus_operator.busstoppage'),
+            model_name="ticket",
+            name="end_bus_stop",
+            field=models.ForeignKey(
+                default="bd42df8f-4ce4-49a3-bdbb-ca7cf51ed332",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="ticket_end_bus_stop",
+                to="bus_operator.busstoppage",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='ticket',
-            name='start_bus_stop',
-            field=models.ForeignKey(default='bd42df8f-4ce4-49a3-bdbb-ca7cf51ed332', on_delete=django.db.models.deletion.CASCADE, related_name='ticket_start_bus_stop', to='bus_operator.busstoppage'),
+            model_name="ticket",
+            name="start_bus_stop",
+            field=models.ForeignKey(
+                default="bd42df8f-4ce4-49a3-bdbb-ca7cf51ed332",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="ticket_start_bus_stop",
+                to="bus_operator.busstoppage",
+            ),
             preserve_default=False,
         ),
     ]

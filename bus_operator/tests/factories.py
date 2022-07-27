@@ -1,27 +1,32 @@
 import factory
 from django.contrib.auth import get_user_model
 import uuid
+
 User = get_user_model()
 
+
 class BaseFactory(factory.django.DjangoModelFactory):
-    id = factory.faker.Faker('uuid4')
+    id = factory.faker.Faker("uuid4")
+
 
 class UserFactory(BaseFactory):
-    full_name = factory.faker.Faker('name')
+    full_name = factory.faker.Faker("name")
     role = "CUSTOMER"
-    email = factory.Sequence(lambda n: 'person{}@example.com'.format(n))
+    email = factory.Sequence(lambda n: "person{}@example.com".format(n))
 
     class Meta:
         model = User
-        django_get_or_create = ('email',)
+        django_get_or_create = ("email",)
+
 
 class BusOperatorProfileFactory(BaseFactory):
-    user = factory.SubFactory('bus_operator.tests.factories.UserFactory')
-    business_name = factory.faker.Faker('name')
+    user = factory.SubFactory("bus_operator.tests.factories.UserFactory")
+    business_name = factory.faker.Faker("name")
     approval_status = "PENDING_APPROVAL"
 
     class Meta:
         model = "bus_operator.BusOperatorProfile"
+
 
 # class CustomerUserFactory(factory.django.DjangoModelFactory):
 #     id = factory.faker.Faker('uuid4')
@@ -70,9 +75,12 @@ class BusOperatorProfileFactory(BaseFactory):
 #     class Meta:
 #         model = "bus_operator.BusOperatorProfile"
 
+
 class BusFactory(BaseFactory):
-    name = factory.faker.Faker('name')
-    operator = factory.SubFactory('bus_operator.tests.factories.BusOperatorProfileFactory')
+    name = factory.faker.Faker("name")
+    operator = factory.SubFactory(
+        "bus_operator.tests.factories.BusOperatorProfileFactory"
+    )
     per_km_fare = 7
     capacity = 30
     type = "REGULAR"
@@ -80,10 +88,11 @@ class BusFactory(BaseFactory):
     class Meta:
         model = "bus_operator.Bus"
 
+
 class BusStopFactory(BaseFactory):
-    bus = factory.SubFactory('bus_operator.tests.factories.BusFactory')
+    bus = factory.SubFactory("bus_operator.tests.factories.BusFactory")
     distance_from_last_stop = 100
     journey_type = "UP"
+
     class Meta:
         model = "bus_operator.BusStoppage"
-
