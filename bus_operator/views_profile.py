@@ -95,6 +95,8 @@ class ProfileDetailView(APIView):
         )
 
     def patch(self, request, *args, **kwargs):
+        if "ratings" in request.data:
+            del request.data["ratings"]
         serializer = serializers_profile.BusOperatorProfileSerializer(
             request.user.busoperatorprofile_user,
             data=request.data,

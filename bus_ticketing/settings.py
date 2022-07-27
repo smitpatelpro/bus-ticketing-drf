@@ -149,8 +149,8 @@ REST_FRAMEWORK = {
 API_V1_URL_PREFIX = "api/v1/"  # It sets prefix for API V1
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=20),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=3),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=13),
 }
 
 
