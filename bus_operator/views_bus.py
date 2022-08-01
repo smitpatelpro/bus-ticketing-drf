@@ -8,7 +8,7 @@ from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
 from django.db.models import Q, F
 from datetime import datetime
-from django.db.models import Case, When, IntegerField, Count, OuterRef, Subquery
+from django.db.models import Min, Max, Case, When, IntegerField, Count, OuterRef, Subquery
 
 
 class BusView(APIView):
@@ -488,28 +488,48 @@ class BusSearchView(APIView):
         amenities = request.GET.getlist("amenities")
         order_by = request.GET.getlist("order_by")
 
-        buses = models.Bus.objects.filter(operator__approval_status="APPROVED")
+        buses = models.Bus.objects.filter(operator__approval_status="APPROVED").exclude(busunavailability_bus__date=date)
 
         frm = Q(name__icontains=from_place)
         to = Q(name__icontains=to_place)
         from_stoppages = models.BusStoppage.objects.filter(frm)
         to_stoppages = models.BusStoppage.objects.filter(to)
+        # print("before buses=", buses.values("id"))
+        # buses = (
+        #     buses.annotate(
+        #         from_dist=Subquery(
+        #             # from_stoppages.filter(bus=OuterRef("id")).values("count")
+        #             from_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop")
+        #         )
+        #     )
+        #     .annotate(
+        #         to_dist=Subquery(
+        #             # to_stoppages.filter(bus=OuterRef("id")).values("count")
+        #             to_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop")
+        #         )
+        #     )
+        #     .filter(from_dist__isnull=False, to_dist__isnull=False)
+        #     .filter(from_dist__lt=F("to_dist"))
+        # )
         buses = (
             buses.annotate(
-                from_dist=Subquery(
+                from_dist=Min(Subquery(
                     # from_stoppages.filter(bus=OuterRef("id")).values("count")
-                    from_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop")
+                    from_stoppages.filter(bus=OuterRef("id")).annotate(min_val=Min("distance_from_last_stop")).values_list("min_val", flat=True)
                 )
-            )
+            ))
             .annotate(
-                to_dist=Subquery(
+                to_dist=Max(Subquery(
                     # to_stoppages.filter(bus=OuterRef("id")).values("count")
-                    to_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop")
+                    to_stoppages.filter(bus=OuterRef("id")).annotate(max_val=Max("distance_from_last_stop")).values_list("max_val", flat=True)
                 )
-            )
-            .filter(from_dist__isnull=False, to_dist__isnull=False)
-            .filter(from_dist__lt=F("to_dist"))
+            ))
+            
         )
+        print("buses annotate:", buses.values("id", "from_dist", "to_dist"))
+        buses=buses.filter(from_dist__isnull=False, to_dist__isnull=False)
+        print("buses NF:", buses.values("id", "from_dist", "to_dist"))
+        buses=buses.filter(from_dist__lt=F("to_dist"))
 
         print("buses=", buses.values("id", "from_dist", "to_dist"))
 

@@ -23,8 +23,8 @@ class BusOperatorProfileAdmin(admin.ModelAdmin):
 class BusAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "operator", "capacity")
     inlines = [
-        BusJourneyInline,
         BusStoppageInline,
+        BusJourneyInline,
     ]
     pass
 

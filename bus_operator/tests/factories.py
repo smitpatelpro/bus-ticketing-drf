@@ -96,3 +96,11 @@ class BusStopFactory(BaseFactory):
 
     class Meta:
         model = "bus_operator.BusStoppage"
+
+
+class BusUnavailabilityFactory(BaseFactory):
+    bus = factory.SubFactory("bus_operator.tests.factories.BusFactory")
+    reason = "Test"
+
+    class Meta:
+        model = "bus_operator.BusUnavailability"
