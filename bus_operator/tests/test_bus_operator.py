@@ -1,31 +1,10 @@
 import pytest
-from rest_framework.test import APIClient
-from rest_framework.test import force_authenticate
+# from rest_framework.test import APIClient
+# from rest_framework.test import force_authenticate
 from .factories import *
-from rest_framework_simplejwt.tokens import RefreshToken
-from datetime import datetime, timedelta
-
-BASE_URL = "/api/v1/"
-
-# BUS OPERATORS ENDPOINTS
-OPERATORS_ENDPOINT = BASE_URL + "bus_operators"
-PROFILE_ENDPOINT = OPERATORS_ENDPOINT + "profile"
-OPERATOR_DETAILS_Endpoint = OPERATORS_ENDPOINT + "/{}"
-
-# BUSES ENDPOINTS
-BUSES_ENDPOINT = BASE_URL + "buses"
-BUSES_SEARCH_ENDPOINT = BUSES_ENDPOINT + "/search"
-BUS_STOPS_ENDPOINT = BUSES_ENDPOINT + "/{}/stops"
-BUS_STOPS_DETAILS_ENDPOINT = BUSES_ENDPOINT + "/{}/stops/{}"
-
-
-def get_tokens_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    return {
-        "refresh": str(refresh),
-        "access": str(refresh.access_token),
-    }
-
+from .constants import *
+# from .conftest import get_tokens_for_user
+# from datetime import datetime, timedelta
 
 class TestBusOperatorProfile:
     # endpoint = 'http://localhost:8080/api/v1/bus_operators/profile'
@@ -113,9 +92,10 @@ class TestBus:
 
     @pytest.mark.django_db
     def test_bus_unavailability(self, api_client, bus_with_stops):
+        # Register bus unavaiability
         BusUnavailabilityFactory.create(bus = bus_with_stops, date="2022-07-22")
 
-        # Forward Journey Search
+        # Forward Journey Search for given bus
         search_params = {
             "date": "22-07-2022",
             "from": "Ahmedabad",
@@ -128,3 +108,4 @@ class TestBus:
 
         # Check that bus should not be present in response data
         assert len(data) == 0
+    

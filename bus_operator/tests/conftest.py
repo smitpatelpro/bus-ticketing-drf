@@ -1,12 +1,22 @@
 import pytest
 from pytest_factoryboy import register
 from rest_framework.test import force_authenticate
+# from rest_framework_simplejwt.tokens import RefreshToken
 
 # from .factories import ( ApprovedBusOperatorProfileFactory, UnapprovedBusOperatorProfileFactory,
 #         BusFactory, OperatorUserFactory, AdminUserFactory,  CustomerUserFactory)
 from .factories import *
 from rest_framework.test import APIClient
 
+# # Helper Methods
+# def get_tokens_for_user(user):
+#     refresh = RefreshToken.for_user(user)
+#     return {
+#         "refresh": str(refresh),
+#         "access": str(refresh.access_token),
+#     }
+
+# Fixtures
 
 @pytest.fixture
 def api_client():
@@ -16,6 +26,13 @@ def api_client():
 # @pytest.fixture
 # def request_client():
 #     return RequestsClient()
+
+
+@pytest.fixture
+def customer():
+    user = UserFactory.create(role="CUSTOMER")
+    customer = CustomerProfileFactory.create(user=user)
+    return customer
 
 
 @pytest.fixture

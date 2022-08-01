@@ -104,3 +104,27 @@ class BusUnavailabilityFactory(BaseFactory):
 
     class Meta:
         model = "bus_operator.BusUnavailability"
+
+
+# ============ Customer =======================
+
+
+class CustomerProfileFactory(BaseFactory):
+    user = factory.SubFactory("bus_operator.tests.factories.UserFactory")
+    gender = "MALE"
+    address = "Test Address"
+    id_proof = None
+    address_proof = None
+    other_kyc_document = None
+
+    class Meta:
+        model = "customer.CustomerProfile"
+
+
+class TicketFactory(BaseFactory):
+    customer = factory.SubFactory("bus_operator.tests.factories.CustomerProfileFactory")
+    bus = factory.SubFactory("bus_operator.tests.factories.BusFactory")
+    number = "T101"
+    payment_status = "PENDING"
+    class Meta:
+        model = "bus_operator.Ticket"
