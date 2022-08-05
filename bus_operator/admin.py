@@ -21,12 +21,16 @@ class BusOperatorProfileAdmin(admin.ModelAdmin):
 
 @admin.register(models.Bus)
 class BusAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "operator", "capacity")
+    list_display = ("id", "name", "operator", "capacity", "stops")
     inlines = [
         BusStoppageInline,
         BusJourneyInline,
     ]
     pass
+
+    def stops(self, obj):
+        stops = obj.busstoppage_bus.order_by("count").values_list("name", flat=True)
+        return str(stops)
 
 
 @admin.register(models.BusAmenity)
