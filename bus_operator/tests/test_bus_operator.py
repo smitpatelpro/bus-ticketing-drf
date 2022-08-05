@@ -1,10 +1,13 @@
 import pytest
+
 # from rest_framework.test import APIClient
 # from rest_framework.test import force_authenticate
 from .factories import *
 from .constants import *
+
 # from .conftest import get_tokens_for_user
 # from datetime import datetime, timedelta
+
 
 class TestBusOperatorProfile:
     # endpoint = 'http://localhost:8080/api/v1/bus_operators/profile'
@@ -43,7 +46,9 @@ class TestBusOperatorProfile:
     # # assert response.status_code == 200
 
     @pytest.mark.django_db
-    def test_bus_create_access_control(self, api_client, approved_operator, unapproved_operator):
+    def test_bus_create_access_control(
+        self, api_client, approved_operator, unapproved_operator
+    ):
         bus_data = {
             "name": "Ahmedabad-Kerala-Express",
             "type": "REGULAR",
@@ -63,7 +68,7 @@ class TestBusOperatorProfile:
 
 class TestBus:
     @pytest.mark.django_db
-    def test_bus_search(self, api_client, bus_with_stops):  
+    def test_bus_search(self, api_client, bus_with_stops):
         # Forward Journey Search
         search_params = {
             "date": "22-07-2022",
@@ -93,7 +98,7 @@ class TestBus:
     @pytest.mark.django_db
     def test_bus_unavailability(self, api_client, bus_with_stops):
         # Register bus unavaiability
-        BusUnavailabilityFactory.create(bus = bus_with_stops, date="2022-07-22")
+        BusUnavailabilityFactory.create(bus=bus_with_stops, date="2022-07-22")
 
         # Forward Journey Search for given bus
         search_params = {
@@ -108,4 +113,3 @@ class TestBus:
 
         # Check that bus should not be present in response data
         assert len(data) == 0
-    

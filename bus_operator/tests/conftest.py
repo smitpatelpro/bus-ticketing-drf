@@ -1,6 +1,7 @@
 import pytest
 from pytest_factoryboy import register
 from rest_framework.test import force_authenticate
+
 # from rest_framework_simplejwt.tokens import RefreshToken
 
 # from .factories import ( ApprovedBusOperatorProfileFactory, UnapprovedBusOperatorProfileFactory,
@@ -17,6 +18,7 @@ from rest_framework.test import APIClient
 #     }
 
 # Fixtures
+
 
 @pytest.fixture
 def api_client():
@@ -51,11 +53,11 @@ def approved_operator():
         user=user_approved, approval_status="APPROVED"
     )
     return approved_operator
-    
+
 
 @pytest.fixture
 def bus_with_stops(api_client, approved_operator):
-    
+
     api_client.force_authenticate(user=approved_operator.user)
     # api_client.force_authenticate(user=user_approved)
     bus = BusFactory(operator=approved_operator, name="Ahmedabad-Kerala-Express")
@@ -108,6 +110,7 @@ def bus_with_stops(api_client, approved_operator):
         departure_time="11:15:00",
     )
     return bus
+
 
 # register(OperatorUserFactory, "operator_user", role="BUS_OPERATOR")
 # register(AdminUserFactory, "admin_user", role="ADMIN")

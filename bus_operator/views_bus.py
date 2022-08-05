@@ -8,7 +8,16 @@ from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
 from django.db.models import Q, F
 from datetime import datetime
-from django.db.models import Min, Max, Case, When, IntegerField, Count, OuterRef, Subquery
+from django.db.models import (
+    Min,
+    Max,
+    # Case,
+    # When,
+    # IntegerField,
+    # Count,
+    OuterRef,
+    Subquery,
+)
 
 
 class BusView(APIView):
@@ -488,83 +497,37 @@ class BusSearchView(APIView):
         amenities = request.GET.getlist("amenities")
         order_by = request.GET.getlist("order_by")
 
-        buses = models.Bus.objects.filter(operator__approval_status="APPROVED").exclude(busunavailability_bus__date=date)
+        # Filter buses from approved operator and by availability
+        buses = models.Bus.objects.filter(operator__approval_status="APPROVED").exclude(
+            busunavailability_bus__date=date
+        )
 
+        # Filter relevant stops for from  and to places
         frm = Q(name__icontains=from_place)
         to = Q(name__icontains=to_place)
         from_stoppages = models.BusStoppage.objects.filter(frm)
         to_stoppages = models.BusStoppage.objects.filter(to)
-        # print("before buses=", buses.values("id"))
-        # buses = (
-        #     buses.annotate(
-        #         from_dist=Subquery(
-        #             # from_stoppages.filter(bus=OuterRef("id")).values("count")
-        #             from_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop")
-        #         )
-        #     )
-        #     .annotate(
-        #         to_dist=Subquery(
-        #             # to_stoppages.filter(bus=OuterRef("id")).values("count")
-        #             to_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop")
-        #         )
-        #     )
-        #     .filter(from_dist__isnull=False, to_dist__isnull=False)
-        #     .filter(from_dist__lt=F("to_dist"))
-        # )
 
-        '''
-        # from_subquery = Subquery( from_stoppages.filter(bus=OuterRef("id")).annotate(min_val=Min("distance_from_last_stop")).values_list("min_val", flat=True) )
-        # to_Subquery = Subquery( to_stoppages.filter(bus=OuterRef("id")).annotate(max_val=Max("distance_from_last_stop")).values_list("max_val", flat=True) )
-        
-        # from_subquery = Subquery( from_stoppages.filter(bus=OuterRef("id")).annotate(min_val=Min("distance_from_last_stop")).aggregate(Min("min_val"))["min_val__min"] )
-        # to_Subquery = Subquery( to_stoppages.filter(bus=OuterRef("id")).annotate(max_val=Max("distance_from_last_stop")).aggregate(Max("max_val"))["max_val__max"] )
-        '''
-        
-        # from_subquery = Subquery( from_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop") )
-        # to_subquery = Subquery( to_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop")  )
-        # buses = buses.annotate(from_dist=Min(from_subquery), to_dist=Max(to_subquery))
-
-        from_subquery = Subquery( from_stoppages.filter(bus=OuterRef("id")).values("bus").annotate(min_val=Min("distance_from_last_stop")).values("min_val")  )
-        to_subquery = Subquery( to_stoppages.filter(bus=OuterRef("id")).values("bus").annotate(max_val = Max("distance_from_last_stop")).values("max_val")  )
+        # Prepare subquery that annotate buses with its minimum distance from "from places" and maximum distance from "to places"  matching distances
+        from_subquery = Subquery(
+            from_stoppages.filter(bus=OuterRef("id"))
+            .values("bus")
+            .annotate(min_val=Min("distance_from_last_stop"))
+            .values("min_val")
+        )
+        to_subquery = Subquery(
+            to_stoppages.filter(bus=OuterRef("id"))
+            .values("bus")
+            .annotate(max_val=Max("distance_from_last_stop"))
+            .values("max_val")
+        )
         buses = buses.annotate(from_dist=from_subquery, to_dist=to_subquery)
-        
-        # buses = (
-        #     buses.annotate(
-        #         from_dist=Min(Subquery(
-        #             # from_stoppages.filter(bus=OuterRef("id")).values("count")
-        #             # from_stoppages.filter(bus=OuterRef("id")).annotate(min_val=Min("distance_from_last_stop")).values_list("min_val", flat=True)
-        #             from_stoppages.filter(bus=OuterRef("id")).annotate(min_val=Min("distance_from_last_stop")).values_list("min_val", flat=True)
-        #         )
-        #     ))
-        #     .annotate(
-        #         to_dist=Max(Subquery(
-        #             # to_stoppages.filter(bus=OuterRef("id")).values("count")
-        #             # to_stoppages.filter(bus=OuterRef("id")).annotate(max_val=Max("distance_from_last_stop")).values_list("max_val", flat=True)
-        #             to_stoppages.filter(bus=OuterRef("id")).annotate(max_val=Max("distance_from_last_stop")).values_list("max_val", flat=True)
-        #         )
-        #     ))
-            
-        # )
-        # import operator
-        # from functools import reduce
-        # from django.db.models import Max, Q
-        
-        # from_vals = from_stoppages.filter(bus=OuterRef("id")).annotate(min_val=Min("distance_from_last_stop")).values_list("min_val", flat=True)
 
-        # from_dist = from_stoppages.values('bus').annotate(min_val=Min('distance_from_last_stop'))
-        # to_dist = from_stoppages.values('bus').annotate(max_val=Max('distance_from_last_stop'))
-        
-        # print("from_dist=", from_dist)
-        # print("to_dist=", to_dist)
-        # q_object = reduce(operator.or_, (Q(**x) for x in best_marks))
-        # buses = buses.filter(q_object)
+        # Filter buses which have both from_dist and to dist
+        buses = buses.filter(from_dist__isnull=False, to_dist__isnull=False)
 
-        print("buses annotate:", buses.values("id", "from_dist", "to_dist"))
-        buses=buses.filter(from_dist__isnull=False, to_dist__isnull=False)
-        print("buses NF:", buses.values("id", "from_dist", "to_dist"))
-        buses=buses.filter(from_dist__lt=F("to_dist"))
-
-        print("buses=", buses.values("id", "from_dist", "to_dist"))
+        # Filter buses which have from_dist < to dist
+        buses = buses.filter(from_dist__lt=F("to_dist"))
 
         # Filters
         if operator:
@@ -735,3 +698,80 @@ class TicketView(APIView):
         # buses = models.Bus.objects.filter(id__in=bus_ids)
 
 '''
+
+"""
+Round 2 Code
+ # print("before buses=", buses.values("id"))
+        # buses = (
+        #     buses.annotate(
+        #         from_dist=Subquery(
+        #             # from_stoppages.filter(bus=OuterRef("id")).values("count")
+        #             from_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop")
+        #         )
+        #     )
+        #     .annotate(
+        #         to_dist=Subquery(
+        #             # to_stoppages.filter(bus=OuterRef("id")).values("count")
+        #             to_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop")
+        #         )
+        #     )
+        #     .filter(from_dist__isnull=False, to_dist__isnull=False)
+        #     .filter(from_dist__lt=F("to_dist"))
+        # )
+
+        
+        ## from_subquery = Subquery( from_stoppages.filter(bus=OuterRef("id")).annotate(min_val=Min("distance_from_last_stop")).values_list("min_val", flat=True) )
+        ## to_Subquery = Subquery( to_stoppages.filter(bus=OuterRef("id")).annotate(max_val=Max("distance_from_last_stop")).values_list("max_val", flat=True) )
+        
+        ## from_subquery = Subquery( from_stoppages.filter(bus=OuterRef("id")).annotate(min_val=Min("distance_from_last_stop")).aggregate(Min("min_val"))["min_val__min"] )
+        ## to_Subquery = Subquery( to_stoppages.filter(bus=OuterRef("id")).annotate(max_val=Max("distance_from_last_stop")).aggregate(Max("max_val"))["max_val__max"] )
+        
+        
+        # from_subquery = Subquery( from_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop") )
+        # to_subquery = Subquery( to_stoppages.filter(bus=OuterRef("id")).values("distance_from_last_stop")  )
+        # buses = buses.annotate(from_dist=Min(from_subquery), to_dist=Max(to_subquery))
+
+
+
+        # Below
+
+         # buses = (
+        #     buses.annotate(
+        #         from_dist=Min(Subquery(
+        #             # from_stoppages.filter(bus=OuterRef("id")).values("count")
+        #             # from_stoppages.filter(bus=OuterRef("id")).annotate(min_val=Min("distance_from_last_stop")).values_list("min_val", flat=True)
+        #             from_stoppages.filter(bus=OuterRef("id")).annotate(min_val=Min("distance_from_last_stop")).values_list("min_val", flat=True)
+        #         )
+        #     ))
+        #     .annotate(
+        #         to_dist=Max(Subquery(
+        #             # to_stoppages.filter(bus=OuterRef("id")).values("count")
+        #             # to_stoppages.filter(bus=OuterRef("id")).annotate(max_val=Max("distance_from_last_stop")).values_list("max_val", flat=True)
+        #             to_stoppages.filter(bus=OuterRef("id")).annotate(max_val=Max("distance_from_last_stop")).values_list("max_val", flat=True)
+        #         )
+        #     ))
+            
+        # )
+        # import operator
+        # from functools import reduce
+        # from django.db.models import Max, Q
+        
+        # from_vals = from_stoppages.filter(bus=OuterRef("id")).annotate(min_val=Min("distance_from_last_stop")).values_list("min_val", flat=True)
+
+        # from_dist = from_stoppages.values('bus').annotate(min_val=Min('distance_from_last_stop'))
+        # to_dist = from_stoppages.values('bus').annotate(max_val=Max('distance_from_last_stop'))
+        
+        # print("from_dist=", from_dist)
+        # print("to_dist=", to_dist)
+        # q_object = reduce(operator.or_, (Q(**x) for x in best_marks))
+        # buses = buses.filter(q_object)
+
+
+        # print("buses annotate:", buses.values("id", "from_dist", "to_dist"))
+
+        # print("buses NF:", buses.values("id", "from_dist", "to_dist"))
+
+        # print("buses=", buses.values("id", "from_dist", "to_dist"))
+
+
+"""

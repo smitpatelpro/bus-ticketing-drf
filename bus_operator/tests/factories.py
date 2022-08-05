@@ -126,5 +126,6 @@ class TicketFactory(BaseFactory):
     bus = factory.SubFactory("bus_operator.tests.factories.BusFactory")
     number = "T101"
     payment_status = "PENDING"
+
     class Meta:
         model = "bus_operator.Ticket"
