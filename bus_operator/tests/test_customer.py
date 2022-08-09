@@ -1,7 +1,8 @@
 import pytest
 from .factories import *
-from .constants import *
+# from .constants import *
 from bus_operator.models import Ticket
+from django.urls import reverse
 
 
 class TestCustomer:
@@ -28,7 +29,7 @@ class TestCustomer:
             "seats": 5,
             "number": "A303",
         }
-        response = api_client.post(TICKETS_ENDPOINT, data=data, format="json")
+        response = api_client.post(reverse("tickets"), data=data, format="json")
         json = response.json()
         print(json)
         assert response.status_code == 201
@@ -61,7 +62,7 @@ class TestCustomer:
             "seats": 2,
             "number": "A303",
         }
-        response = api_client.post(TICKETS_ENDPOINT, data=data, format="json")
+        response = api_client.post(reverse("tickets"), data=data, format="json")
         json = response.json()
         print(json)
         assert response.status_code == 201
@@ -86,7 +87,7 @@ class TestCustomer:
             "seats": 1,
             "number": "A303",
         }
-        response = api_client.post(TICKETS_ENDPOINT, data=data, format="json")
+        response = api_client.post(reverse("tickets"), data=data, format="json")
         json = response.json()
         print(json)
         assert response.status_code == 400
@@ -104,7 +105,7 @@ class TestCustomer:
             "seats": 1,
             "number": "A303",
         }
-        response = api_client.post(TICKETS_ENDPOINT, data=data, format="json")
+        response = api_client.post(reverse("tickets"), data=data, format="json")
         json = response.json()
         print(json)
         assert response.status_code == 201
