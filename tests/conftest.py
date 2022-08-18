@@ -1,11 +1,4 @@
 import pytest
-from pytest_factoryboy import register
-from rest_framework.test import force_authenticate
-
-# from rest_framework_simplejwt.tokens import RefreshToken
-
-# from .factories import ( ApprovedBusOperatorProfileFactory, UnapprovedBusOperatorProfileFactory,
-#         BusFactory, OperatorUserFactory, AdminUserFactory,  CustomerUserFactory)
 from .factories import *
 from rest_framework.test import APIClient
 

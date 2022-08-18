@@ -1,16 +1,9 @@
 import pytest
 from django.urls import reverse
-# from rest_framework.test import APIClient
-# from rest_framework.test import force_authenticate
 from .factories import *
-# from .constants import *
-
-# from .conftest import get_tokens_for_user
-# from datetime import datetime, timedelta
 
 
 class TestBusOperatorProfile:
-
     @pytest.mark.django_db
     def test_bus_create_access_control(
         self, api_client, approved_operator, unapproved_operator
@@ -21,6 +14,7 @@ class TestBusOperatorProfile:
             "capacity": 80,
             "per_km_fare": "7.00",
         }
+
         # For Approved Bus Operator
         api_client.force_authenticate(user=approved_operator.user)
         response = api_client.post(reverse("buses"), data=bus_data, format="json")
@@ -63,7 +57,7 @@ class TestBus:
 
     @pytest.mark.django_db
     def test_bus_unavailability(self, api_client, bus_with_stops):
-        # Register bus unavaiability
+        # Register bus unavaiability for date 22/07/2022
         BusUnavailabilityFactory.create(bus=bus_with_stops, date="2022-07-22")
 
         # Forward Journey Search for given bus

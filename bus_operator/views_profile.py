@@ -2,20 +2,16 @@ from multiprocessing import context
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework import permissions
+# from rest_framework import permissions
 from . import models, serializers_profile
-from common.serializers import MediaSerializer
-from django.utils.decorators import method_decorator
 from authentication.permission_classes import *
 
 
 class BusOperatorProfileView(APIView):
     """
-    List View for ALL BusOperatorProfile objects
-    it is responsible to perform operation on collection of object
+    Its responsible to provide operations to Bus Operator and Admin for both single and multiple objects
     """
 
-    # permission_classes = [AdminGetPatchOnlyOperatorPostOnly]
     permission_classes = [
         (AdminOnly & (GetOnly | PatchOnly)) | (BusOperatorProfileRequired & PostOnly)
     ]
@@ -82,8 +78,7 @@ class BusOperatorProfileView(APIView):
 # Bus Operator Profile Views
 class ProfileDetailView(APIView):
     """
-    Details View for Specific BusOperatorProfile objects
-    it is responsible to perform operation on single object
+    Details View for currently loggedin operator to access his BusOperatorProfile objects
     """
 
     permission_classes = [BusOperatorProfileRequired & (GetOnly | PatchOnly)]
@@ -119,7 +114,7 @@ class ProfileDetailView(APIView):
 # Views for Current User
 class ProfileMediaView(APIView):
     """
-    Media access for Current BusOperatorProfile
+    Media access for currently loggedin BusOperatorProfile
     """
 
     permission_classes = [

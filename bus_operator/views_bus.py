@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework import permissions
+# from rest_framework import permissions
 from . import models, serializers_bus
 from common.serializers import MediaSerializer
 from django.utils.decorators import method_decorator
@@ -11,10 +11,6 @@ from datetime import datetime
 from django.db.models import (
     Min,
     Max,
-    # Case,
-    # When,
-    # IntegerField,
-    # Count,
     OuterRef,
     Subquery,
 )
@@ -356,6 +352,119 @@ class BusStoppageView(APIView):
             )
 
 
+# TODO: Enhance Performance
+class BusSearchView(APIView):
+    """
+    It facilitate Searching and Sorting of Buses based on input parameters
+    """
+
+    # permission_classes = [CustomerOnly]
+
+    def get(self, request, *args, **kwargs):
+        # Mandatory
+        from_place = request.GET.get("from")
+        to_place = request.GET.get("to")
+        date = request.GET.get("date")
+
+        date_format = "%d-%m-%Y"
+        date = datetime.strptime(date, date_format).date()
+
+        # Optional
+        departure_start_time = request.GET.get("departure_start_time")
+        departure_end_time = request.GET.get("departure_end_time")
+        operator = request.GET.get("operator")
+        type = request.GET.getlist("type")
+        amenities = request.GET.getlist("amenities")
+        order_by = request.GET.getlist("order_by")
+
+        # Filter buses from approved operator and by availability
+        buses = models.Bus.objects.filter(operator__approval_status="APPROVED").exclude(
+            busunavailability_bus__date=date
+        )
+
+        # Filter relevant stops for from  and to places
+        frm = Q(name__icontains=from_place)
+        to = Q(name__icontains=to_place)
+        from_stoppages = models.BusStoppage.objects.filter(frm)
+        to_stoppages = models.BusStoppage.objects.filter(to)
+
+        # Prepare subquery that annotate buses with its minimum distance from "from places" and maximum distance from "to places"  matching distances
+        from_subquery = Subquery(
+            from_stoppages.filter(bus=OuterRef("id"))
+            .values("bus")
+            .annotate(min_val=Min("distance_from_last_stop"))
+            .values("min_val")
+        )
+        to_subquery = Subquery(
+            to_stoppages.filter(bus=OuterRef("id"))
+            .values("bus")
+            .annotate(max_val=Max("distance_from_last_stop"))
+            .values("max_val")
+        )
+        buses = buses.annotate(from_dist=from_subquery, to_dist=to_subquery)
+
+        # Filter buses which have both from_dist and to dist
+        buses = buses.filter(from_dist__isnull=False, to_dist__isnull=False)
+
+        # Filter buses which have from_dist < to dist
+        buses = buses.filter(from_dist__lt=F("to_dist"))
+
+        # Filters
+        if operator:
+            buses = buses.filter(operator=operator)
+        if type:
+            buses = buses.filter(type__in=type)
+        if order_by:
+            try:
+                # TODO: validate if this has no security vulnerabilities
+                buses = buses.order_by(order_by[0])
+            except:
+                return Response(
+                    {"success": False, "message": "Invalid order_by values"},
+                    status=status.HTTP_200_OK,
+                )
+        if amenities:
+            buses = buses.filter(amenities__in=amenities)
+
+        serializer = serializers_bus.BusSerializer(buses, many=True)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+
+# Operator Ticket Views
+class TicketView(APIView):
+    """
+    Its provides ticket booking details to BusOperator
+    """
+
+    permission_classes = [BusOperatorProfileRequired]
+
+    def get(self, request, *args, **kwargs):
+        bus = request.GET.get("bus")
+        customer = request.GET.get("customer")
+        journey_date = request.GET.get("journey_date")
+        date_format = "%d-%m-%Y"
+        # journey_date = datetime.strptime(journey_date, date_format).date()
+
+        profile = request.user.busoperatorprofile_user
+        tickets = models.Ticket.objects.filter(bus__operator=profile)
+
+        if bus:
+            tickets = tickets.filter(bus=bus)
+        if customer:
+            tickets = tickets.filter(customer=customer)
+        if journey_date:
+            tickets = tickets.filter(journey_date=journey_date)
+
+        serializer = serializers_bus.TicketSerializer(tickets, many=True)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+
+'''
+
 # # BusJourney Views
 # class BusJourneyView(APIView):
 #     """
@@ -470,118 +579,7 @@ class BusStoppageView(APIView):
 #                 {"success": False, "message": "DELETE is not permitted on this collection"},
 #                 status=status.HTTP_400_BAD_REQUEST,
 #             )
-
-
-# TODO: Enhance Performance
-class BusSearchView(APIView):
-    """
-    It facilitate Searching and Sorting of Buses based on input parameters
-    """
-
-    # permission_classes = [CustomerOnly]
-
-    def get(self, request, *args, **kwargs):
-        # Mandatory
-        from_place = request.GET.get("from")
-        to_place = request.GET.get("to")
-        date = request.GET.get("date")
-
-        date_format = "%d-%m-%Y"
-        date = datetime.strptime(date, date_format).date()
-
-        # Optional
-        departure_start_time = request.GET.get("departure_start_time")
-        departure_end_time = request.GET.get("departure_end_time")
-        operator = request.GET.get("operator")
-        type = request.GET.getlist("type")
-        amenities = request.GET.getlist("amenities")
-        order_by = request.GET.getlist("order_by")
-
-        # Filter buses from approved operator and by availability
-        buses = models.Bus.objects.filter(operator__approval_status="APPROVED").exclude(
-            busunavailability_bus__date=date
-        )
-
-        # Filter relevant stops for from  and to places
-        frm = Q(name__icontains=from_place)
-        to = Q(name__icontains=to_place)
-        from_stoppages = models.BusStoppage.objects.filter(frm)
-        to_stoppages = models.BusStoppage.objects.filter(to)
-
-        # Prepare subquery that annotate buses with its minimum distance from "from places" and maximum distance from "to places"  matching distances
-        from_subquery = Subquery(
-            from_stoppages.filter(bus=OuterRef("id"))
-            .values("bus")
-            .annotate(min_val=Min("distance_from_last_stop"))
-            .values("min_val")
-        )
-        to_subquery = Subquery(
-            to_stoppages.filter(bus=OuterRef("id"))
-            .values("bus")
-            .annotate(max_val=Max("distance_from_last_stop"))
-            .values("max_val")
-        )
-        buses = buses.annotate(from_dist=from_subquery, to_dist=to_subquery)
-
-        # Filter buses which have both from_dist and to dist
-        buses = buses.filter(from_dist__isnull=False, to_dist__isnull=False)
-
-        # Filter buses which have from_dist < to dist
-        buses = buses.filter(from_dist__lt=F("to_dist"))
-
-        # Filters
-        if operator:
-            buses = buses.filter(operator=operator)
-        if type:
-            buses = buses.filter(type__in=type)
-        if order_by:
-            try:
-                # TODO: validate if this has no security vulnerabilities
-                buses = buses.order_by(order_by[0])
-            except:
-                return Response(
-                    {"success": False, "message": "Invalid order_by values"},
-                    status=status.HTTP_200_OK,
-                )
-        if amenities:
-            buses = buses.filter(amenities__in=amenities)
-
-        serializer = serializers_bus.BusSerializer(buses, many=True)
-        return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
-
-
-# Operator Ticket Views
-class TicketView(APIView):
-    """
-    Details View for Specific Ticket objects
-    """
-
-    permission_classes = [BusOperatorProfileRequired]
-
-    def get(self, request, *args, **kwargs):
-        bus = request.GET.get("bus")
-        customer = request.GET.get("customer")
-        journey_date = request.GET.get("journey_date")
-        date_format = "%d-%m-%Y"
-        # journey_date = datetime.strptime(journey_date, date_format).date()
-
-        profile = request.user.busoperatorprofile_user
-        tickets = models_operator.Ticket.objects.filter(bus__operator=profile)
-
-        if bus:
-            tickets = tickets.filter(bus=bus)
-        if customer:
-            tickets = tickets.filter(customer=customer)
-        if journey_date:
-            tickets = tickets.filter(journey_date=journey_date)
-
-        serializer = serializers_bus.TicketSerializer(tickets, many=True)
-        return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
-
+'''
 
 '''
 # Reference Code for previous search implementation Experiments

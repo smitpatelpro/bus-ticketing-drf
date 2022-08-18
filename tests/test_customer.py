@@ -1,6 +1,5 @@
 import pytest
 from .factories import *
-# from .constants import *
 from bus_operator.models import Ticket
 from django.urls import reverse
 
