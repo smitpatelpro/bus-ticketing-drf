@@ -13,8 +13,7 @@ from django.utils import timezone
 
 class CustomerProfileView(APIView):
     """
-    List View for ALL CustomerProfile objects
-    it is responsible to perform operation on collection of object
+    It provides access to any customer profile
     """
 
     permission_classes = [
@@ -74,7 +73,7 @@ class CustomerProfileView(APIView):
 # Customer Profile Views
 class ProfileDetailView(APIView):
     """
-    it provides profile operation for currently loggedin customer
+    it provides profile operation for currently loggedin customer profile only
     """
 
     permission_classes = [CustomerOnly]
