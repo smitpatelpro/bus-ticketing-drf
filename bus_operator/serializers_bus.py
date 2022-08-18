@@ -165,8 +165,6 @@ class TicketSerializer(serializers.ModelSerializer):
         is_available, available_count = bus.is_seat_available(
             start_bus_stop.count, end_bus_stop.count, seats
         )
-        # print("is_available", is_available)
-        # print("available_count", available_count)
         if not is_available:
             raise serializers.ValidationError(
                 "Requested seats are not available for given route. available seats are {}".format(
