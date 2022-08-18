@@ -2,7 +2,7 @@ from rest_framework import serializers
 from . import models
 from django.contrib.auth import password_validation
 from django.db import transaction
-from django.db import IntegrityError
+# from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from common.serializers import MediaSerializer
 from common.models import Media

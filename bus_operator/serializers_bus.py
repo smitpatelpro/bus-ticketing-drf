@@ -1,11 +1,7 @@
-from ast import operator
-from asyncore import read
-from importlib.metadata import requires
-from typing_extensions import Required
 from rest_framework import serializers
 from . import models
-from django.db import transaction
-from django.db import IntegrityError
+# from django.db import transaction
+# from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from common.serializers import MediaSerializer
 from common.models import Media
