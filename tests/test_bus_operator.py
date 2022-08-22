@@ -2,24 +2,23 @@ import pytest
 from django.urls import reverse
 from .factories import *
 
-
-class TestBusOperatorProfile:
-    @pytest.mark.django_db
-    def test_bus_create_access_control(
-        self, api_client, approved_operator, unapproved_operator
-    ):
-        bus_data = {
+bus_data = {
             "name": "Ahmedabad-Kerala-Express",
             "type": "REGULAR",
             "capacity": 80,
             "per_km_fare": "7.00",
         }
 
+class TestBusOperatorProfile:
+    @pytest.mark.django_db
+    def test_bus_create_access_control_success(self, api_client, approved_operator):
         # For Approved Bus Operator
         api_client.force_authenticate(user=approved_operator.user)
         response = api_client.post(reverse("buses"), data=bus_data, format="json")
         assert response.status_code == 201
 
+    @pytest.mark.django_db
+    def test_bus_create_access_control_failure(self, api_client, unapproved_operator):
         # For Unapproved Bus Operator
         api_client.force_authenticate(user=unapproved_operator.user)
         response = api_client.get(reverse("buses"), data=bus_data, format="json")
@@ -39,7 +38,7 @@ class TestBus:
         assert response.status_code == 200
         print(response.json())
         data = response.json()["data"]
-        assert len(data) == 1
+        assert len(data) == 1   # It should return only 1 bus which is setup in fixture bus_with_stops
         assert data[0]["id"] == bus_with_stops.id
 
         # Reverse Journey Search

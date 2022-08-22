@@ -39,7 +39,7 @@ class BusFactory(BaseFactory):
     )
     per_km_fare = 7
     capacity = 30
-    type = "REGULAR"
+    # type = "REGULAR"
 
     class Meta:
         model = "bus_operator.Bus"
@@ -47,8 +47,6 @@ class BusFactory(BaseFactory):
 
 class BusStopFactory(BaseFactory):
     bus = factory.SubFactory("bus_operator.tests.factories.BusFactory")
-    distance_from_last_stop = 100
-    journey_type = "UP"
 
     class Meta:
         model = "bus_operator.BusStoppage"
@@ -56,7 +54,6 @@ class BusStopFactory(BaseFactory):
 
 class BusUnavailabilityFactory(BaseFactory):
     bus = factory.SubFactory("bus_operator.tests.factories.BusFactory")
-    reason = "Test"
 
     class Meta:
         model = "bus_operator.BusUnavailability"
@@ -67,11 +64,11 @@ class BusUnavailabilityFactory(BaseFactory):
 
 class CustomerProfileFactory(BaseFactory):
     user = factory.SubFactory("bus_operator.tests.factories.UserFactory")
-    gender = "MALE"
-    address = "Test Address"
-    id_proof = None
-    address_proof = None
-    other_kyc_document = None
+    # gender = "MALE"
+    # address = "Test Address"
+    # id_proof = None
+    # address_proof = None
+    # other_kyc_document = None
 
     class Meta:
         model = "customer.CustomerProfile"
@@ -80,8 +77,8 @@ class CustomerProfileFactory(BaseFactory):
 class TicketFactory(BaseFactory):
     customer = factory.SubFactory("bus_operator.tests.factories.CustomerProfileFactory")
     bus = factory.SubFactory("bus_operator.tests.factories.BusFactory")
-    number = "T101"
-    payment_status = "PENDING"
+    # number = "T101"
+    # payment_status = "PENDING"
 
     class Meta:
         model = "bus_operator.Ticket"
