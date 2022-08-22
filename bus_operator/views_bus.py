@@ -380,13 +380,13 @@ class BusSearchView(APIView):
         # Filter buses from approved operator and by availability
         buses = models.Bus.objects.filter(operator__approval_status="APPROVED").exclude(
             busunavailability_bus__date=date
-        )
-
+        ).prefetch_related("busstoppage_bus", "photos", "amenities").select_related("operator")
+        
         # Filter relevant stops for from  and to places
         frm = Q(name__icontains=from_place)
         to = Q(name__icontains=to_place)
-        from_stoppages = models.BusStoppage.objects.filter(frm)
-        to_stoppages = models.BusStoppage.objects.filter(to)
+        from_stoppages = models.BusStoppage.objects.filter(frm).select_related("bus")
+        to_stoppages = models.BusStoppage.objects.filter(to).select_related("bus")
 
         # Prepare subquery that annotate buses with its minimum distance from "from places" and maximum distance from "to places"  matching distances
         from_subquery = Subquery(
