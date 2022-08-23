@@ -24,7 +24,7 @@ class UserFactory(BaseFactory):
 
 
 class BusOperatorProfileFactory(BaseFactory):
-    user = factory.SubFactory("bus_operator.tests.factories.UserFactory")
+    user = factory.SubFactory(UserFactory)
     business_name = factory.faker.Faker("name")
     approval_status = "PENDING_APPROVAL"
 
@@ -35,7 +35,7 @@ class BusOperatorProfileFactory(BaseFactory):
 class BusFactory(BaseFactory):
     name = factory.faker.Faker("name")
     operator = factory.SubFactory(
-        "bus_operator.tests.factories.BusOperatorProfileFactory"
+        BusOperatorProfileFactory
     )
     per_km_fare = 7
     capacity = 30
@@ -46,14 +46,15 @@ class BusFactory(BaseFactory):
 
 
 class BusStopFactory(BaseFactory):
-    bus = factory.SubFactory("bus_operator.tests.factories.BusFactory")
+    bus = factory.SubFactory(BusFactory)
+    # name = 
 
     class Meta:
         model = "bus_operator.BusStoppage"
 
 
 class BusUnavailabilityFactory(BaseFactory):
-    bus = factory.SubFactory("bus_operator.tests.factories.BusFactory")
+    bus = factory.SubFactory(BusFactory)
 
     class Meta:
         model = "bus_operator.BusUnavailability"
@@ -63,7 +64,7 @@ class BusUnavailabilityFactory(BaseFactory):
 
 
 class CustomerProfileFactory(BaseFactory):
-    user = factory.SubFactory("bus_operator.tests.factories.UserFactory")
+    user = factory.SubFactory(UserFactory)
     # gender = "MALE"
     # address = "Test Address"
     # id_proof = None
@@ -75,7 +76,7 @@ class CustomerProfileFactory(BaseFactory):
 
 
 class TicketFactory(BaseFactory):
-    customer = factory.SubFactory("bus_operator.tests.factories.CustomerProfileFactory")
+    customer = factory.SubFactory(CustomerProfileFactory)
     bus = factory.SubFactory("bus_operator.tests.factories.BusFactory")
     # number = "T101"
     # payment_status = "PENDING"
