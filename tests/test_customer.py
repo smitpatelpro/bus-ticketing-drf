@@ -8,6 +8,7 @@ class TestCustomer:
     @pytest.mark.django_db
     def test_bus_ticket_booking(self, api_client, bus_with_stops, customer):
         # Get stop objects from bus
+        print(bus_with_stops.busstoppage_bus.all().values("count"))
         stop1 = bus_with_stops.busstoppage_bus.get(count=1)
         stop2 = bus_with_stops.busstoppage_bus.get(count=2)
         stop3 = bus_with_stops.busstoppage_bus.get(count=3)

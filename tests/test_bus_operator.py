@@ -29,6 +29,7 @@ class TestBus:
     @pytest.mark.django_db
     def test_bus_search_forward_journey(self, api_client, bus_with_stops):
         # Forward Journey Search
+        BusStopFactory.reset_sequence(0)
         search_params = {
             "date": "22-07-2022",
             "from": "Ahmedabad",
@@ -43,6 +44,7 @@ class TestBus:
 
     @pytest.mark.django_db
     def test_bus_search_reverse_journey(self, api_client, bus_with_stops):
+        BusStopFactory.reset_sequence(0)
         # Reverse Journey Search
         search_params = {
             "date": "22-07-2022",
@@ -59,6 +61,7 @@ class TestBus:
     @pytest.mark.django_db
     def test_bus_unavailability(self, api_client, bus_with_stops):
         # Register bus unavaiability for date 22/07/2022
+        BusStopFactory.reset_sequence(0)
         BusUnavailabilityFactory.create(bus=bus_with_stops, date="2022-07-22")
 
         # Forward Journey Search for given bus

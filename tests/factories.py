@@ -1,5 +1,6 @@
 import factory
 from django.contrib.auth import get_user_model
+import datetime
 
 User = get_user_model()
 
@@ -33,7 +34,8 @@ class BusOperatorProfileFactory(BaseFactory):
 
 
 class BusFactory(BaseFactory):
-    name = factory.faker.Faker("name")
+    # name = factory.faker.Faker("name")
+    name = factory.Sequence(lambda n: f"TestBus-{n}")
     operator = factory.SubFactory(
         BusOperatorProfileFactory
     )
@@ -47,8 +49,12 @@ class BusFactory(BaseFactory):
 
 class BusStopFactory(BaseFactory):
     bus = factory.SubFactory(BusFactory)
-    # name = 
-
+    name = factory.Iterator(["Ahmedabad", "Udaypur", "Jodhpur", "Jaipur", "Delhi", "Kanpur"])
+    arrival_time = factory.LazyFunction(datetime.datetime.now)
+    departure_time = factory.LazyFunction(datetime.datetime.now)
+    count = factory.Sequence(lambda n: n)
+    distance_from_last_stop = factory.Sequence(lambda n: n*10)
+    journey_type = "UP" # Value Doesnt matter
     class Meta:
         model = "bus_operator.BusStoppage"
 
