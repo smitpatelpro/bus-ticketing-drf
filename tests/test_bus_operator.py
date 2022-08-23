@@ -27,7 +27,7 @@ class TestBusOperatorProfile:
 
 class TestBus:
     @pytest.mark.django_db
-    def test_bus_search(self, api_client, bus_with_stops):
+    def test_bus_search_forward_journey(self, api_client, bus_with_stops):
         # Forward Journey Search
         search_params = {
             "date": "22-07-2022",
@@ -41,6 +41,8 @@ class TestBus:
         assert len(data) == 1   # It should return only 1 bus which is setup in fixture bus_with_stops
         assert data[0]["id"] == bus_with_stops.id
 
+    @pytest.mark.django_db
+    def test_bus_search_reverse_journey(self, api_client, bus_with_stops):
         # Reverse Journey Search
         search_params = {
             "date": "22-07-2022",
