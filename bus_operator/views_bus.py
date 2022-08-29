@@ -14,7 +14,10 @@ from django.db.models import (
     OuterRef,
     Subquery,
 )
-
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.paginator import Paginator
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 
 class BusView(APIView):
     """
@@ -353,13 +356,14 @@ class BusStoppageView(APIView):
 
 
 # TODO: Enhance Performance
-class BusSearchView(APIView):
+class BusSearchView(APIView, PageNumberPagination):
     """
     It facilitate Searching and Sorting of Buses based on input parameters
     """
+    page_size = 10
 
     # permission_classes = [CustomerOnly]
-
+    # @method_decorator(cache_page(60 * 15))
     def get(self, request, *args, **kwargs):
         # Mandatory
         from_place = request.GET.get("from")
@@ -426,10 +430,14 @@ class BusSearchView(APIView):
         if amenities:
             buses = buses.filter(amenities__in=amenities)
 
-        serializer = serializers_bus.BusSerializer(buses, many=True)
-        return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
+        buses = buses.order_by("id")
+        page = self.paginate_queryset(buses, request, view=self)
+
+        serializer = serializers_bus.BusSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
+        # return Response(
+        #     {"success": True, "data": self.get_paginated_response(serializer.data)}, status=status.HTTP_200_OK
+        # )
 
 
 # Operator Ticket Views

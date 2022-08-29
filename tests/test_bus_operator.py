@@ -38,7 +38,7 @@ class TestBus:
         response = api_client.get(reverse("buses-search"), data=search_params)
         assert response.status_code == 200
         print(response.json())
-        data = response.json()["data"]
+        data = response.json()["results"]
         assert len(data) == 1   # It should return only 1 bus which is setup in fixture bus_with_stops
         assert data[0]["id"] == bus_with_stops.id
 
@@ -54,7 +54,7 @@ class TestBus:
         response = api_client.get(reverse("buses-search"), data=search_params)
         assert response.status_code == 200
         print(response.json())
-        data = response.json()["data"]
+        data = response.json()["results"]
         assert len(data) == 1
         assert data[0]["id"] == bus_with_stops.id
 
@@ -73,7 +73,7 @@ class TestBus:
         response = api_client.get(reverse("buses-search"), data=search_params)
         assert response.status_code == 200
         print(response.json())
-        data = response.json()["data"]
+        data = response.json()["results"]
 
         # Check that bus should not be present in response data
         assert len(data) == 0

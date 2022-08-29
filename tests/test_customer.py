@@ -77,6 +77,8 @@ class TestCustomer:
 
         # Check that bus capacity should 0 for stops 1 to 2 after making successful payment
         assert bus_with_stops.get_available_capacity_stops(1, 2) == 0
+        # Check that bus capacity should 2 for stops 2 to 3
+        assert bus_with_stops.get_available_capacity_stops(2, 3) == 2
 
         # Since not seats is available for stop 1 to 2, then same booking request should fail now
         data = {

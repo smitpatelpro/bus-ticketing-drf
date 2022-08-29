@@ -10,5 +10,10 @@ class WebsiteUser(HttpUser):
     def search(self):
         frm = random.choice(self.stops)
         to = random.choice(self.stops)
-        self.client.get(f"http://localhost:8000/api/v1/buses/search?date=22-07-2022&from={frm}&to={to}")
+        self.client.get(f"http://localhost:8000/api/v1/buses/search?date=22-07-2022&from={frm}&to={to}&page={random.randint(1, 5)}")
+        # self.client.get(f"http://localhost:8000/api/v1/buses/search?date=22-07-2022&from={frm}&to={to}")
+
+    # @task
+    # def search(self):
+    #     self.client.post("http://localhost:8000/api/v1/login", data={"email":"smit.patel@nickelfox.com", "password":"testuser"})
 

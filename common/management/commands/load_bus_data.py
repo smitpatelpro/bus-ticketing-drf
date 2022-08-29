@@ -18,7 +18,7 @@ class Command(BaseCommand):
         operator = BusOperatorProfile.objects.last()
         buses = BusFactory.create_batch(count, operator=operator)
         for bus in buses:
-            stops = BusStopFactory.create_batch(5, bus=bus)
+            stops = BusStopFactory.create_batch(10, bus=bus)
             BusStopFactory.reset_sequence(0)
             # bus.save()
         
