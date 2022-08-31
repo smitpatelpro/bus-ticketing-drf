@@ -356,7 +356,8 @@ class BusStoppageView(APIView):
 
 
 # TODO: Enhance Performance
-class BusSearchView(APIView, PageNumberPagination):
+# class BusSearchView(APIView, PageNumberPagination):
+class BusSearchView(APIView):
     """
     It facilitate Searching and Sorting of Buses based on input parameters
     """
@@ -384,7 +385,8 @@ class BusSearchView(APIView, PageNumberPagination):
         # Filter buses from approved operator and by availability
         buses = models.Bus.objects.filter(operator__approval_status="APPROVED").exclude(
             busunavailability_bus__date=date
-        ).prefetch_related("busstoppage_bus", "photos", "amenities").select_related("operator")
+        ).prefetch_related("busstoppage_bus").select_related("operator")
+        # ).prefetch_related("busstoppage_bus", "photos", "amenities").select_related("operator")
         
         # Filter relevant stops for from  and to places
         frm = Q(name__icontains=from_place)
@@ -430,14 +432,21 @@ class BusSearchView(APIView, PageNumberPagination):
         if amenities:
             buses = buses.filter(amenities__in=amenities)
 
-        buses = buses.order_by("id")
-        page = self.paginate_queryset(buses, request, view=self)
+        # buses = buses.order_by("id")
+        # buses = buses.values("id", "operator", "name", "type","capacity", "per_km_fare")
+        # page = self.paginate_queryset(buses, request, view=self)
 
-        serializer = serializers_bus.BusSerializer(page, many=True)
-        return self.get_paginated_response(serializer.data)
+        # serializer = serializers_bus.BusSerializer(page, many=True)
+        # return self.get_paginated_response(serializer.data)
+        # return self.get_paginated_response(page)
         # return Response(
         #     {"success": True, "data": self.get_paginated_response(serializer.data)}, status=status.HTTP_200_OK
         # )
+        
+        return Response(
+            {"success": True, "data": buses.values("id", "operator", "name", "type","capacity", "per_km_fare")}, status=status.HTTP_200_OK
+            # {"success": True, "data": buses.values("id", "operator", "name", "type","capacity", "per_km_fare", "photos", "amenities")}, status=status.HTTP_200_OK
+        )
 
 
 # Operator Ticket Views

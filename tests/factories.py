@@ -41,7 +41,7 @@ class BusFactory(BaseFactory):
     )
     per_km_fare = 7
     capacity = 30
-    # type = "REGULAR"
+    type = "REGULAR"
 
     class Meta:
         model = "bus_operator.Bus"
@@ -52,7 +52,7 @@ class BusStopFactory(BaseFactory):
     name = factory.Iterator(["Ahmedabad", "Udaypur", "Jodhpur", "Jaipur", "Delhi", "Kanpur"])
     arrival_time = factory.LazyFunction(datetime.datetime.now)
     departure_time = factory.LazyFunction(datetime.datetime.now)
-    count = factory.Sequence(lambda n: n)
+    count = factory.Sequence(lambda n: n+1)
     distance_from_last_stop = factory.Sequence(lambda n: n*10)
     journey_type = "UP" # Value Doesnt matter
     class Meta:
