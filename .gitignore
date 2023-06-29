@@ -48,3 +48,10 @@ Thumbs.db
 *.mov
 *.wmv
 
+media
+*/media/*
+
+static
+*/static/*
+
+.env
