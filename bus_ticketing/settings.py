@@ -147,10 +147,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 MEDIA_URL = "/media/"
-<<<<<<< HEAD
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-=======
->>>>>>> feature/test-cases
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
@@ -165,9 +162,6 @@ REST_FRAMEWORK = {
     ),
 }
 
-<<<<<<< HEAD
-API_V1_URL_PREFIX = "api/v1/"   # It sets prefix for API V1
-=======
 API_V1_URL_PREFIX = "api/v1/"  # It sets prefix for API V1
 
 SIMPLE_JWT = {
@@ -197,4 +191,3 @@ if DEBUG:
 
 
 # CONN_MAX_AGE = 10
->>>>>>> feature/test-cases
