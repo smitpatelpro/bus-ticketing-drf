@@ -29,10 +29,12 @@ services:
     image: postgres:13.0-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=myinfo_user
-      - POSTGRES_PASSWORD=testuser
-      - POSTGRES_DB=bus_eticketing
+    env_file:
+      - ./postgres.env
+    # environment:
+    #   - POSTGRES_USER=myinfo_user
+    #   - POSTGRES_PASSWORD=testuser
+    #   - POSTGRES_DB=bus_eticketing
     restart: "on-failure"
 
 volumes:
